@@ -1,0 +1,16 @@
+{
+  "generated": "2026-07-22T20:02:27.353982+09:00",
+  "host": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.13.6"
+  },
+  "packages": {
+    "tensorflow": "2.21.0",
+    "tensorflow_hub": "0.16.1",
+    "numpy": "2.5.1",
+    "opencv": "5.0.0"
+  },
+  "elapsed_sec": 314.4,
+  "note": "Full URFD run (30 fall + 40 ADL). Evaluation cell verbatim from SHine-K_reproducibility_colab.ipynb; only download retry added."
+}

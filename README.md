@@ -32,6 +32,18 @@ containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.
 - `latency_benchmark.js` — post-processing micro-benchmark (simplified REBA + fire pixel-scan; neural inference excluded)
 - `output/run_20260627_222419/` — the exact run cited in the manuscript (metrics, per-sequence CSV, confusion matrix, logs, manifest)
 
+## Results (measured)
+
+| Run | Sequences | Precision | Recall | F1 | Accuracy | Median latency |
+|---|---|---|---|---|---|---|
+| `run_20260722_195713_full70` — **full benchmark** | 30 fall + 40 ADL | 0.61 | 0.77 (23/30) | 0.68 | 0.69 | 57 frames ≈ 1.9 s |
+| `run_20260627_222419` — standing-fall subset | 8 fall + 8 ADL | 0.73 | 1.00 (8/8) | 0.84 | 0.81 | 99.5 frames ≈ 3.3 s |
+
+Failure modes on the full run are structured (per-frame diagnostics): missed falls crossed the posture
+thresholds only transiently without sustaining the 700 ms confirmation window; false alarms split into
+sustained deep-bending vs deliberate lying-down classes. Both run folders under `output/` carry the full
+per-sequence CSVs and manifests.
+
 ## Data
 
 The [UR Fall Detection dataset (URFD)](https://fenix.ur.edu.pl/~mkepski/ds/uf.html) is publicly
