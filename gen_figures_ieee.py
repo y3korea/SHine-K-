@@ -18,8 +18,8 @@ def txt(ax,x,y,s,fs=8,bold=False,it=False,ha="center",va="center",bg=None,color=
     bbox=dict(boxstyle="round,pad=0.22",fc=bg,ec="none") if bg else None
     ax.text(x,y,s,ha=ha,va=va,fontsize=fs,color=color,zorder=5,
             fontweight="bold" if bold else "normal",fontstyle="italic" if it else "normal",bbox=bbox)
-def arr(ax,x1,y1,x2,y2,lw=1.1,ls="-"):
-    ax.add_patch(FancyArrowPatch((x1,y1),(x2,y2),arrowstyle="-|>",mutation_scale=13,
+def arr(ax,x1,y1,x2,y2,lw=1.1,ls="-",ms=13):
+    ax.add_patch(FancyArrowPatch((x1,y1),(x2,y2),arrowstyle="-|>",mutation_scale=ms,
                  color=EDGE,lw=lw,ls=ls,shrinkA=1,shrinkB=1,zorder=3))
 def newax(h_in,ymax):
     fig,ax=plt.subplots(figsize=(W,h_in)); ax.set_xlim(0,100); ax.set_ylim(0,ymax); ax.axis("off")
@@ -84,8 +84,8 @@ def fig_dataflow():
 
 # ---------- FIGURE 3: operational workflow, LANDSCAPE redesign, figure* ----------
 def aitag(ax,x,y):
-    rect(ax,x,y-1.6,4.6,3.2,fc=EDGE,lw=0)
-    ax.text(x+2.3,y,"AI",ha="center",va="center",fontsize=6.8,color="white",fontweight="bold",zorder=6)
+    rect(ax,x,y-1.4,4.2,2.8,fc=EDGE,lw=0)
+    ax.text(x+2.1,y,"AI",ha="center",va="center",fontsize=6.0,color="white",fontweight="bold",zorder=6)
 def bc(ax,cx,cy,w,h,s,ai=False,design=False,fs=7.2,tdy=0):
     rect(ax,cx-w/2,cy-h/2,w,h,fc=("#f5f7fc" if design else FILL),lw=1.0,ls=("--" if design else "-"))
     txt(ax,cx,cy+tdy,s,fs=fs,color=(DGREY if design else TXT))
@@ -95,14 +95,14 @@ def fig_workflow():
     fig,ax=newax(4.6,64)
     dl=(0,(4,3))
     # legend (top strip)
-    ax.plot([3,6.6],[62.4,62.4],color=EDGE,lw=1.7); ax.text(7.6,62.4,"implemented / validated",fontsize=7.4,va="center")
-    ax.plot([33,36.6],[62.4,62.4],color=EDGE,lw=1.0,ls="--"); ax.text(37.6,62.4,"design target",fontsize=7.4,va="center")
+    ax.plot([3,6.6],[62.4,62.4],color=EDGE,lw=1.7); ax.text(7.6,62.4,"implemented / validated",fontsize=6.4,va="center")
+    ax.plot([33,36.6],[62.4,62.4],color=EDGE,lw=1.0,ls="--"); ax.text(37.6,62.4,"design target",fontsize=6.4,va="center")
     ax.add_patch(Polygon([(53.5,63.6),(55,62.4),(53.5,61.2),(52,62.4)],closed=True,fc=FILL,ec=EDGE,lw=1.0))
-    ax.text(56,62.4,"decision",fontsize=7.4,va="center")
-    rect(ax,66,61.1,3.4,2.6,fc=EDGE,lw=0); ax.text(67.7,62.4,"AI",ha="center",va="center",fontsize=6.2,color="white",fontweight="bold")
-    ax.text(70.4,62.4,"AI step",fontsize=7.4,va="center")
+    ax.text(56,62.4,"decision",fontsize=6.4,va="center")
+    rect(ax,66,61.2,3.2,2.4,fc=EDGE,lw=0); ax.text(67.6,62.4,"AI",ha="center",va="center",fontsize=5.6,color="white",fontweight="bold")
+    ax.text(70.4,62.4,"AI step",fontsize=6.4,va="center")
     # worker (left)
-    bc(ax,10,32,16,9,"Worker on the\nshop floor",fs=7.6)
+    bc(ax,10,32,16,9,"Worker on the\nshop floor",fs=6.4)
     # sense column (4 stacked)
     sx=32; sw=22
     sense=[("Camera (edge AI)\nposture · fall · caught-in\nhelmet / mask / vest",True,False,52,11.5,-1.2),
@@ -110,36 +110,36 @@ def fig_workflow():
            ("Self check-in\nsleep / fatigue / pain",False,False,25.5,9.5,0),
            ("Environment IoT\ngas / noise",False,True,12.5,9.5,0)]
     for s,ai,de,cy,sh,tdy in sense:
-        bc(ax,sx,cy,sw,sh,s,ai=ai,design=de,fs=6.8,tdy=tdy)
-        arr(ax,18,32,sx-sw/2,cy,lw=1.0)
-        arr(ax,sx+sw/2,cy,45,33,lw=1.0)
+        bc(ax,sx,cy,sw,sh,s,ai=ai,design=de,fs=5.6,tdy=tdy)
+        arr(ax,18,32,sx-sw/2,cy,lw=1.0,ms=8.5)
+        arr(ax,sx+sw/2,cy,45,33,lw=1.0,ms=8.5)
     # risk judgement (center)
-    bc(ax,57,33,24,15,"Risk judgement:\nfall state machine + REBA\n(rule-based, validated)",ai=True,fs=7.1,tdy=-1.0)
-    txt(ax,57,22.6,"+ open agent harness: PoC ·\ninterface-level · not evaluated",fs=6.5,it=True,color=DGREY)
+    bc(ax,57,33,24,15,"Risk judgement:\nfall state machine + REBA\n(rule-based, validated)",ai=True,fs=5.9,tdy=-1.0)
+    txt(ax,57,22.6,"+ open agent harness: PoC ·\ninterface-level · not evaluated",fs=5.4,it=True,color=DGREY)
     # decision diamond
     dcx,dcy=76.5,33
     ax.add_patch(Polygon([(dcx,dcy+7),(dcx+5.5,dcy),(dcx,dcy-7),(dcx-5.5,dcy)],closed=True,fc=FILL,ec=EDGE,lw=1.0,zorder=2))
-    txt(ax,dcx,dcy,"Risk\ntype?",fs=7.3)
-    arr(ax,69,33,dcx-5.5,33,lw=1.1)
+    txt(ax,dcx,dcy,"Risk\ntype?",fs=6.1)
+    arr(ax,69,33,dcx-5.5,33,lw=1.1,ms=8.5)
     # right outcome column
     rx=90.5; rw=18
-    bc(ax,rx,57.5,rw,8,"Acute hazard\nfall / fire / gas",fs=6.9)
-    bc(ax,rx,47,rw,9.5,"Alert + evacuation\n& roll-call + 119/e-Gen\n(design)",design=True,fs=6.1)
-    bc(ax,rx,38.5,rw,5.5,"Emergency resolved",fs=6.7)
-    bc(ax,rx,30.5,rw,5.5,"Continue monitoring",fs=6.7)
-    bc(ax,rx,22.5,rw,8,"Health / ergonomic risk\nhigh REBA / fatigue",fs=6.4)
-    bc(ax,rx,12,rw,9.5,"Personalized recovery\ncoaching (rest/stretch)",ai=True,fs=6.4,tdy=-1.2)
-    bc(ax,rx,2.9,rw,5.8,"Confirm done · log\nadherence (design)",fs=6.5)
-    arr(ax,rx,53.5,rx,51.75,lw=1.0); arr(ax,rx,42.25,rx,41.25,lw=1.0)
-    arr(ax,rx,18.5,rx,16.75,lw=1.0); arr(ax,rx,7.25,rx,5.8,lw=1.0)
+    bc(ax,rx,57.5,rw,8,"Acute hazard\nfall / fire / gas",fs=5.7)
+    bc(ax,rx,47,rw,9.5,"Alert + evacuation\n& roll-call + 119/e-Gen\n(design)",design=True,fs=5.2)
+    bc(ax,rx,38.5,rw,5.5,"Emergency resolved",fs=5.6)
+    bc(ax,rx,30.5,rw,5.5,"Continue monitoring",fs=5.6)
+    bc(ax,rx,22.5,rw,8,"Health / ergonomic risk\nhigh REBA / fatigue",fs=5.4)
+    bc(ax,rx,12,rw,9.5,"Personalized recovery\ncoaching (rest/stretch)",ai=True,fs=5.4,tdy=-1.1)
+    bc(ax,rx,2.9,rw,5.8,"Confirm done · log\nadherence (design)",fs=5.4)
+    arr(ax,rx,53.5,rx,51.75,lw=1.0,ms=8.5); arr(ax,rx,42.25,rx,41.25,lw=1.0,ms=8.5)
+    arr(ax,rx,18.5,rx,16.75,lw=1.0,ms=8.5); arr(ax,rx,7.25,rx,5.8,lw=1.0,ms=8.5)
     # branch connectors from diamond
-    arr(ax,dcx,dcy+7,rx-rw/2,57.5,lw=1.0); txt(ax,75.5,47.5,"acute",fs=6.9,it=True,bg="white")
-    arr(ax,dcx+5.5,dcy,rx-rw/2,30.5,lw=1.0,ls=dl); txt(ax,79,36.2,"normal",fs=6.9,it=True,bg="white")
-    arr(ax,dcx,dcy-7,rx-rw/2,22.5,lw=1.0); txt(ax,75,18.3,"cumulative",fs=6.9,it=True,bg="white")
+    arr(ax,dcx,dcy+7,rx-rw/2,57.5,lw=1.0,ms=8.5); txt(ax,75.5,47.5,"acute",fs=5.8,it=True,bg="white")
+    arr(ax,dcx+5.5,dcy,rx-rw/2,30.5,lw=1.0,ls=dl,ms=8.5); txt(ax,79,36.2,"normal",fs=5.8,it=True,bg="white")
+    arr(ax,dcx,dcy-7,rx-rw/2,22.5,lw=1.0,ms=8.5); txt(ax,75,18.3,"cumulative",fs=5.8,it=True,bg="white")
     # closed feedback loop: recovery chain -> back to worker (dashed, along bottom)
     ax.plot([rx-rw/2,10],[2.9,2.9],color=EDGE,lw=1.0,ls=dl)
-    ax.add_patch(FancyArrowPatch((10,2.9),(10,27.5),arrowstyle="-|>",mutation_scale=13,color=EDGE,lw=1.0,ls=dl,zorder=3))
-    txt(ax,55,5.4,"Closed feedback loop: re-measure & adapt",fs=7.2,it=True,bg="white")
+    ax.add_patch(FancyArrowPatch((10,2.9),(10,27.5),arrowstyle="-|>",mutation_scale=8.5,color=EDGE,lw=1.0,ls=dl,zorder=3))
+    txt(ax,55,5.4,"Closed feedback loop: re-measure & adapt",fs=6.2,it=True,bg="white")
     save(fig,"fig_workflow.png")
 
 fig_arch(); fig_dataflow(); fig_workflow()
