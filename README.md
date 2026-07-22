@@ -4,7 +4,7 @@ Code, benchmarks, and per-run provenance for:
 
 > **Design and Working Prototype of SHine-K: An Edge-AI, Video-Free Web Platform for
 > Centralized Worker Safety-and-Health Monitoring in SME Manufacturing**
-> (Sensors, MDPI — submitted 2026)
+> (IEEE Access — under submission, 2026)
 
 **Interactive demonstration site** (simulation control-twin + in-browser live edge demo running the
 same deployed fall-detection state machine evaluated here):
