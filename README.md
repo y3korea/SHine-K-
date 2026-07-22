@@ -1,4 +1,4 @@
-# SHine-K — Reproducibility Package
+# SHine-K (Safety and Health in Enterprise) — Reproducibility Package
 
 Code, benchmarks, and per-run provenance for:
 
