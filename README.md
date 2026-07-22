@@ -32,6 +32,20 @@ containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.
 - `latency_benchmark.js` — post-processing micro-benchmark (simplified REBA + fire pixel-scan; neural inference excluded)
 - `output/run_20260627_222419/` — the exact run cited in the manuscript (metrics, per-sequence CSV, confusion matrix, logs, manifest)
 
+### Manuscript figures (IEEE Access, print-size)
+
+`gen_figures_ieee.py` regenerates the manuscript's diagram figures (Figs. 1-3)
+at their final printed width (7.16 in, IEEE Access full text width) so
+in-figure text is >= 6.5 pt in print. The prototype screenshots (Figs. 4-5)
+are captured from the public demo console in English light-capture mode:
+
+```bash
+python3 -m http.server 8765 --directory shine-k-site
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$CHROME" --headless=new --force-device-scale-factor=2 --window-size=1200,1000   --virtual-time-budget=20000 --screenshot=fig_twin.png   "http://localhost:8765/console.html?demo&light&en#twin"
+"$CHROME" --headless=new --force-device-scale-factor=2 --window-size=1200,1000   --virtual-time-budget=9500 --screenshot=fig_live.png   "http://localhost:8765/console.html?autoreplay&light&en#live"
+```
+
 ## Results (measured)
 
 | Run | Sequences | Precision | Recall | F1 | Accuracy | Median latency |
