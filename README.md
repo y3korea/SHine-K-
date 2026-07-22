@@ -14,6 +14,7 @@ same deployed fall-detection state machine evaluated here):
 
 | Notebook | What it does | One-click |
 |---|---|---|
+| `SHine-K_urfd_minimal_colab.ipynb` | **Minimal 3-cell reproduction** — full 70-sequence URFD run, no Drive mount needed, results zip auto-downloads. Verified: `fall-01` triggers at frame 150, identical to the manuscript run | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_urfd_minimal_colab.ipynb) |
 | `SHine-K_full70_colab.ipynb` | **Full URFD run — 30 fall + 40 ADL sequences**, deployed thresholds (sens = 1.0), no re-tuning | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_full70_colab.ipynb) |
 | `SHine-K_reproducibility_colab.ipynb` | Paper figures (Fig. 1–4, 300 dpi), recovery-guide GIFs, post-processing micro-benchmark, and the 8+8-sequence URFD subset run reported in the manuscript | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_reproducibility_colab.ipynb) |
 
@@ -23,6 +24,7 @@ containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.
 
 ## Contents
 
+- `SHine-K_urfd_minimal_colab.ipynb` — minimal 3-cell full-70 reproduction (deps → evaluate → zip)
 - `SHine-K_full70_colab.ipynb` — full 70-sequence URFD evaluation (env-var config only; evaluation cell identical to the original notebook)
 - `SHine-K_reproducibility_colab.ipynb` — figures · GIFs · latency micro-benchmark · URFD subset evaluation
 - `gen_figures.py` — publication figures (Fig. 1–4, 300 dpi, monochrome academic style)
