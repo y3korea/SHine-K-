@@ -1,0 +1,143 @@
+{
+  "run_id": "run_20260627_222419",
+  "timestamp": {
+    "utc_iso": "2026-06-27T13:24:19.996833+00:00",
+    "kst_iso": "2026-06-27T22:24:19.996833+09:00",
+    "tz_offset": "+09:00",
+    "epoch": 1782566659.996833
+  },
+  "seed": 12345,
+  "environment": {
+    "in_colab": true,
+    "python": "3.12.13",
+    "node": "v20.19.0",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "machine": "x86_64",
+    "processor": "x86_64",
+    "cpu_count": 12,
+    "packages": {
+      "numpy": "2.0.2",
+      "matplotlib": "3.10.0",
+      "PIL": "11.3.0",
+      "tensorflow": "2.20.0",
+      "tensorflow_hub": "0.16.1",
+      "cv2": "4.13.0"
+    }
+  },
+  "git_commit": null,
+  "measurement_scope": "Post-processing CPU cost only, on randomly-generated inputs (33 random landmarks; 80x60 random RGBA). Model inference is browser-side and EXCLUDED. Not end-to-end FPS. DESIGN-TARGET metrics (e.g., 97.8% accuracy, 340% ROI, 65% injury reduction, 10-second 119 dispatch) are NOT measured here. The URFD fall-detection block (eval_metrics.json), when present, is the one measured accuracy result.",
+  "latency_benchmark": {
+    "tool": "shinek-postproc-microbench",
+    "scope": "post-processing CPU only; synthetic inputs; neural inference excluded; Node runtime (not browser)",
+    "seed": 12345,
+    "warmup": 3,
+    "trials": 15,
+    "reba_iters": 50000,
+    "fire_iters": 20000,
+    "node": "v20.19.0",
+    "reba_ms": {
+      "mean": 0.000278781268,
+      "stdev": 1.6327098213024537e-05,
+      "median": 0.00027377782,
+      "min": 0.00027151124,
+      "max": 0.00033844273999999997,
+      "n": 15
+    },
+    "fire_ms": {
+      "mean": 0.10821362735,
+      "stdev": 0.0035761141659053446,
+      "median": 0.10911033055000001,
+      "min": 0.09485221749999999,
+      "max": 0.10971987615,
+      "n": 15
+    },
+    "total_ms_mean": 0.108492408618,
+    "units": "ms/frame",
+    "input": "33 LCG-seeded random landmarks; 80x60 LCG-seeded random RGBA"
+  },
+  "fall_detection_eval": {
+    "dataset": "UR Fall Detection (URFD), cam0 RGB",
+    "model": "MoveNet MultiPose Lightning (TF-Hub)",
+    "state_machine": "faithful port of worksite_multi.html analyzePerson(), deployed defaults (sens=1.0)",
+    "n_fall": 8,
+    "n_adl": 8,
+    "frame_stride": 1,
+    "counts": {
+      "TP": 8,
+      "FP": 3,
+      "FN": 0,
+      "TN": 5
+    },
+    "precision": 0.7273,
+    "recall": 1.0,
+    "f1": 0.8421,
+    "accuracy": 0.8125,
+    "detection_latency_frames": {
+      "mean": 102.75,
+      "median": 99.5
+    },
+    "caveat": "URFD = clean single-subject lab footage, fixed camera. Bounds generalization; != SME shop-floor. Evaluates pose->state-machine logic, not multi-person association. Thresholds unchanged from deployment."
+  },
+  "contents": [
+    {
+      "path": "eval_confusion_matrix.png",
+      "bytes": 45900,
+      "sha256": "832c7df1d5dc8b31a6b2f0c41552dba2823d6b793df381d616839ae50e0c3309"
+    },
+    {
+      "path": "eval_metrics.json",
+      "bytes": 700,
+      "sha256": "cbd10194e5b3673c6159459283443134fa0e2b4b0743f1d8d9fe1b37b136a2b3"
+    },
+    {
+      "path": "eval_per_sequence.csv",
+      "bytes": 340,
+      "sha256": "35fac8e2a59283cfbae56e731b4f219ce2c99e7344a41aa3341e7624678725c6"
+    },
+    {
+      "path": "figures/fig1_architecture.png",
+      "bytes": 110473,
+      "sha256": "33be0677c09b4f6ea27f4925e7cd4a0298fb4f35c6c2d10c21e2e78874a8ab35"
+    },
+    {
+      "path": "figures/fig2_system_overview.png",
+      "bytes": 80129,
+      "sha256": "cb2749d08bfa3e5d93adf0ad50ffd3abf9ad00db2304794d71650855f56f0fb0"
+    },
+    {
+      "path": "figures/fig3_dataflow.png",
+      "bytes": 157368,
+      "sha256": "4d778e880274f80676c9fdd320c3a5ac3fa1c584bafda0ef478e88cf989dcc69"
+    },
+    {
+      "path": "figures/fig4_workflow.png",
+      "bytes": 327963,
+      "sha256": "aa23d45f5fb4019fcd24e81e48bef32d673f9c2d183d226be6fd8158fa5f16fa"
+    },
+    {
+      "path": "figures/recovery/neck.gif",
+      "bytes": 23770,
+      "sha256": "4c6b90cb2b439e3516c20a77bb8a35df6e4ad6bddba1c89eb35f7c6c2f0ec0ef"
+    },
+    {
+      "path": "figures/recovery/rest.gif",
+      "bytes": 25940,
+      "sha256": "bb0df0557669b7e020fb221451222272e1c0f2b2852b86df88b86f4b2301153b"
+    },
+    {
+      "path": "figures/recovery/stretch.gif",
+      "bytes": 22916,
+      "sha256": "b8273f67ae31d2186a2a777786d715f229dadbd675c60321fecba9b5ad14e888"
+    },
+    {
+      "path": "logs/bench.json",
+      "bytes": 778,
+      "sha256": "9ede334e70bcf77fb8e33545b24980f5527fb83ce8b3e93f1e789e608ff7b2ed"
+    },
+    {
+      "path": "logs/bench_stdout.txt",
+      "bytes": 916,
+      "sha256": "a1b5b895e5a7b00477d3dc80f73cf9173af27faa93cf172dea3c7a0143193b3e"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+SHine-K post-processing micro-benchmark (synthetic inputs; neural inference EXCLUDED; Node v20.19.0)
+REBA  : 0.0003 +/- 0.0000 ms/frame (median 0.0003, min 0.0003, n=15)
+Fire  : 0.1082 +/- 0.0036 ms/frame (80x60; median 0.1091)
+Total : 0.1085 ms/frame (mean)
+__JSON__{"tool":"shinek-postproc-microbench","scope":"post-processing CPU only; synthetic inputs; neural inference excluded; Node runtime (not browser)","seed":12345,"warmup":3,"trials":15,"reba_iters":50000,"fire_iters":20000,"node":"v20.19.0","reba_ms":{"mean":0.000278781268,"stdev":0.000016327098213024537,"median":0.00027377782,"min":0.00027151124,"max":0.00033844273999999997,"n":15},"fire_ms":{"mean":0.10821362735,"stdev":0.0035761141659053446,"median":0.10911033055000001,"min":0.09485221749999999,"max":0.10971987615,"n":15},"total_ms_mean":0.108492408618,"units":"ms/frame","input":"33 LCG-seeded random landmarks; 80x60 LCG-seeded random RGBA"}
