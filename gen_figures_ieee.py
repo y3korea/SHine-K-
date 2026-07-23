@@ -45,19 +45,31 @@ G=0.7    # uniform arrowhead-to-border gap (data units)
 
 def fig_arch():
     fig,ax=newax(2.9,100)
-    stages=[("SENSE",["Vision\n(MediaPipe / YOLO)","Radar (mmWave)","Wearable (BLE)","Thermal / IoT"]),
-            ("JUDGE",["Fusion (multimodal)","Risk predictor (LSTM)","REBA (33 keypoints)"]),
-            ("ACT",["Nudge (haptic)","Health feedback","Task / staffing"]),
-            ("CONNECT",["Emergency\n119 / e-Gen","Evacuation, roll-call","Realtime events\n(broker)"])]
+    # (label, is_design): design/PoC nodes are dashed + light-filled to match
+    # Figs. 2-3 and the Working/PoC/Design staging of Table II (honest staging).
+    stages=[("SENSE",[("Vision: pose / PPE / fire",False),("Wearable vitals (BLE)",True),
+                      ("Radar (mmWave)",True),("Environment IoT",True)]),
+            ("JUDGE",[("Fall state machine",False),("REBA (33-kpt pose)",False),
+                      ("Agent harness",True)]),
+            ("ACT",[("Risk alerts + log",False),("Ergonomic feedback",False),
+                    ("Recovery coaching",True)]),
+            ("CONNECT",[("Control twin\n(multi-site)",False),("Realtime events\n(broker)",False),
+                        ("119 / e-Gen\ndispatch",True)])]
     colw=22; gap=2; x0=3; y=16; H=74
+    # legend (top band): solid = implemented/validated, dashed = design target
+    ax.plot([x0,x0+3.4],[95.5,95.5],color=EDGE,lw=1.3)
+    txt(ax,x0+4.2,95.5,"implemented / validated",fs=8.0,ha="left")
+    ax.plot([54,57.4],[95.5,95.5],color=EDGE,lw=1.1,ls=(0,(4,3)))
+    txt(ax,58.2,95.5,"design target",fs=8.0,ha="left")
     for i,(name,nodes) in enumerate(stages):
         x=x0+i*(colw+gap)
         rect(ax,x,y,colw,H,fc=GREY,lw=1.1)
         txt(ax,x+colw/2,y+H-7,name,fs=10.5,bold=True)
         top=y+H-15; bot=y+5; n=len(nodes); slot=(top-bot)/n
-        for j,nd in enumerate(nodes):
+        for j,(nd,des) in enumerate(nodes):
             cy=top-slot*(j+0.5); bh=min(12 if "\n" in nd else 10,slot-2)
-            rect(ax,x+0.8,cy-bh/2,colw-1.6,bh,fc=FILL,lw=0.9); txt(ax,x+colw/2,cy,nd,fs=7.1)
+            rect(ax,x+0.8,cy-bh/2,colw-1.6,bh,fc=("#f5f7fc" if des else FILL),lw=0.9,ls=("--" if des else "-"))
+            txt(ax,x+colw/2,cy,nd,fs=7.0,color=(DGREY if des else TXT))
         if i<3: arr(ax,x+colw,y+H/2,x+colw+gap-G,y+H/2,lw=1.1,ms=4.5)   # 촉 4.5·간격 G 통일
     # 피드백 루프: CONNECT 하변 중앙 → 하단 레일(점선) → SENSE 하변으로 상향 진입(촉은 하변-G)
     dl=(0,(4,3)); y_rail=8.0
