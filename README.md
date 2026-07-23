@@ -36,6 +36,7 @@ hashes, and the notebooks themselves are versioned in this repository.)
 - `gen_figures.py` — early-draft publication figures (superseded by `gen_figures_ieee.py` / `gen_figures_colab.ipynb`, which match the submitted manuscript's Figs. 1–8)
 - `gen_figures_colab.ipynb` — Colab reproduction of **all 8 manuscript figures**: diagrams (Figs. 1–3, deterministic; pixel-identical under the pinned matplotlib), result plots (Figs. 6–8, same code + archived run data), and demo-console screenshots (Figs. 4–5, headless capture; equivalent-capture standard since the console is live)
 - `gen_gifs.py` — recovery-exercise animation guides
+- `prototype_worksite/` — **runnable worksite edge module** backing the Working-status claims: in-browser MoveNet MultiPose pose + fall state machine + simplified REBA, and a real YOLOv11 **PPE** detector (`ppe.onnx`) via ONNX Runtime Web. Serve the folder and open `worksite_multi.html` with a webcam
 - `latency_benchmark.js` — post-processing micro-benchmark (simplified REBA + fire pixel-scan; neural inference excluded)
 - `output/run_20260627_222419/` — subset run cited in the manuscript (metrics, per-sequence CSV, confusion matrix, logs, manifest)
 - `output/run_20260722_195713_full70/` — full-benchmark run cited in the manuscript
