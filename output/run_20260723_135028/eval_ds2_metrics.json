@@ -1,0 +1,13 @@
+{
+  "dataset_dir": "/content/output/_gmdcsa24/sorted",
+  "counts": {
+    "TP": 79,
+    "FP": 40,
+    "FN": 0,
+    "TN": 41
+  },
+  "precision": 0.6639,
+  "recall": 1.0,
+  "f1": 0.798,
+  "note": "deployed thresholds, no re-tuning (sens=1.0)"
+}

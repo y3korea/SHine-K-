@@ -1,0 +1,95 @@
+{
+  "run_id": "run_20260723_135028",
+  "timestamp": {
+    "utc_iso": "2026-07-23T04:50:28.601741+00:00",
+    "kst_iso": "2026-07-23T13:50:28.601741+09:00",
+    "tz_offset": "+09:00",
+    "epoch": 1784782228.601741
+  },
+  "seed": 12345,
+  "environment": {
+    "in_colab": true,
+    "python": "3.12.13",
+    "node": "v20.19.0",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "machine": "x86_64",
+    "processor": "x86_64",
+    "cpu_count": 12,
+    "packages": {
+      "numpy": "2.0.2",
+      "matplotlib": "3.10.0",
+      "PIL": "11.3.0",
+      "tensorflow": "2.20.0",
+      "tensorflow_hub": "0.16.1",
+      "cv2": "4.13.0"
+    }
+  },
+  "git_commit": null,
+  "measurement_scope": "Post-processing CPU cost only, on randomly-generated inputs (33 random landmarks; 80x60 random RGBA). Model inference is browser-side and EXCLUDED. Not end-to-end FPS. DESIGN-TARGET metrics (e.g., 97.8% accuracy, 340% ROI, 65% injury reduction, 10-second 119 dispatch) are NOT measured here. The URFD fall-detection block (eval_metrics.json), when present, is the one measured accuracy result.",
+  "latency_benchmark": null,
+  "fall_detection_eval": {
+    "dataset": "UR Fall Detection (URFD), cam0 RGB",
+    "model": "MoveNet MultiPose Lightning (TF-Hub)",
+    "state_machine": "faithful port of worksite_multi.html analyzePerson(), deployed defaults (sens=1.0)",
+    "n_fall": 30,
+    "n_adl": 40,
+    "frame_stride": 1,
+    "counts": {
+      "TP": 23,
+      "FP": 15,
+      "FN": 7,
+      "TN": 25
+    },
+    "precision": 0.6053,
+    "recall": 0.7667,
+    "f1": 0.6765,
+    "accuracy": 0.6857,
+    "detection_latency_frames": {
+      "mean": 76.52173913043478,
+      "median": 57.0
+    },
+    "caveat": "URFD = clean single-subject lab footage, fixed camera. Bounds generalization; != SME shop-floor. Evaluates pose->state-machine logic, not multi-person association. Thresholds unchanged from deployment."
+  },
+  "contents": [
+    {
+      "path": "ablation_results.csv",
+      "bytes": 274,
+      "sha256": "f6d856575c0cf8e0f76ff8d68ecd432512409ecf040264b82a0a6a27facbdb90"
+    },
+    {
+      "path": "eval_confusion_matrix.png",
+      "bytes": 47682,
+      "sha256": "7f74330eac7e43f39c9143482bf17cec0243ef3be3d19100079249f2ca5b3543"
+    },
+    {
+      "path": "eval_ds2_metrics.json",
+      "bytes": 241,
+      "sha256": "b8d594ef5434c6f75a31a8c905e5f44f38e1e8ede03430fc87ade537745436b0"
+    },
+    {
+      "path": "eval_metrics.json",
+      "bytes": 719,
+      "sha256": "6d940cdb1e99cb8c9be0f988712f4ae89e679527af34da56ad71ab20ab3efd36"
+    },
+    {
+      "path": "eval_per_sequence.csv",
+      "bytes": 1327,
+      "sha256": "9f344e0d44b6b1586476d78d7afa943832f4910c3112014950a0c51b1d0b5b4b"
+    },
+    {
+      "path": "fig_sweep_operating.png",
+      "bytes": 61136,
+      "sha256": "56d80069b8f2802e433820d39a5daef82e79b2dd19ff2b4275f499b8f440658b"
+    },
+    {
+      "path": "fig_sweep_sensitivity.png",
+      "bytes": 115663,
+      "sha256": "0ffaca83645dab4ebbc33e4de180937e168849682bce463dfd27a9b65d50978c"
+    },
+    {
+      "path": "sweep_results.csv",
+      "bytes": 1579,
+      "sha256": "bdfd74eb2d8c4728d9e7faa69182c1164b561e981e499f96cbbe66abadd74179"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "dataset": "UR Fall Detection (URFD), cam0 RGB",
+  "model": "MoveNet MultiPose Lightning (TF-Hub)",
+  "state_machine": "faithful port of worksite_multi.html analyzePerson(), deployed defaults (sens=1.0)",
+  "n_fall": 30,
+  "n_adl": 40,
+  "frame_stride": 1,
+  "counts": {
+    "TP": 23,
+    "FP": 15,
+    "FN": 7,
+    "TN": 25
+  },
+  "precision": 0.6053,
+  "recall": 0.7667,
+  "f1": 0.6765,
+  "accuracy": 0.6857,
+  "detection_latency_frames": {
+    "mean": 76.52173913043478,
+    "median": 57.0
+  },
+  "caveat": "URFD = clean single-subject lab footage, fixed camera. Bounds generalization; != SME shop-floor. Evaluates pose->state-machine logic, not multi-person association. Thresholds unchanged from deployment."
+}

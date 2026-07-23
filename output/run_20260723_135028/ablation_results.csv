@@ -1,0 +1,5 @@
+TP,FP,FN,TN,precision,recall,f1,fpr,variant
+23,15,7,25,0.6053,0.7667,0.6765,0.375,"deployed (tilt+aspect, 700 ms)"
+17,6,13,34,0.7391,0.5667,0.6415,0.15,tilt-only
+20,11,10,29,0.6452,0.6667,0.6557,0.275,aspect-only
+30,28,0,12,0.5172,1.0,0.6818,0.7,no confirmation window

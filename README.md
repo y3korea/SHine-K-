@@ -10,13 +10,15 @@ Code, benchmarks, and per-run provenance for:
 same deployed fall-detection state machine evaluated here):
 **https://y3korea.github.io/shine-k/** · source: [y3korea/shine-k](https://github.com/y3korea/shine-k)
 
-## Reproduce the fall-detection evaluation (URFD)
+## Reproduce the fall-detection evaluation (URFD + GMDCSA-24)
 
 | Notebook | What it does | One-click |
 |---|---|---|
+| `SHine-K_full70_sweep_colab.ipynb` | **Everything in the Evaluation section, one click** — full 70-sequence URFD run + threshold sweep (7 tilt × 5 window) + component ablation + **GMDCSA-24 cross-dataset evaluation** (auto-downloads v2.0 from Zenodo, CC BY 4.0; deployed thresholds, no re-tuning; per-clip predictions saved) | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_full70_sweep_colab.ipynb) |
 | `SHine-K_urfd_minimal_colab.ipynb` | **Minimal 3-cell reproduction** — full 70-sequence URFD run, no Drive mount needed, results zip auto-downloads. Verified: `fall-01` triggers at frame 150, identical to the manuscript run | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_urfd_minimal_colab.ipynb) |
 | `SHine-K_full70_colab.ipynb` | **Full URFD run — 30 fall + 40 ADL sequences**, deployed thresholds (sens = 1.0), no re-tuning | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_full70_colab.ipynb) |
 | `SHine-K_reproducibility_colab.ipynb` | Paper figures (Fig. 1–4, 300 dpi), recovery-guide GIFs, post-processing micro-benchmark, and the 8+8-sequence URFD subset run reported in the manuscript | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_reproducibility_colab.ipynb) |
+| `gen_figures_colab.ipynb` | Regenerates the manuscript's diagram figures pixel-identically to the submitted files | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/gen_figures_colab.ipynb) |
 
 Run everything with **Runtime → Run all**. Each run writes a timestamped `output/run_<id>/` folder
 containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.png`, and a
@@ -24,13 +26,18 @@ containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.
 
 ## Contents
 
+- `SHine-K_full70_sweep_colab.ipynb` — full-70 URFD + keypoint-cache threshold sweep / ablation + GMDCSA-24 cross-dataset run (one click; ships with the executed outputs of the manuscript run)
 - `SHine-K_urfd_minimal_colab.ipynb` — minimal 3-cell full-70 reproduction (deps → evaluate → zip)
 - `SHine-K_full70_colab.ipynb` — full 70-sequence URFD evaluation (env-var config only; evaluation cell identical to the original notebook)
 - `SHine-K_reproducibility_colab.ipynb` — figures · GIFs · latency micro-benchmark · URFD subset evaluation
 - `gen_figures.py` — publication figures (Fig. 1–4, 300 dpi, monochrome academic style)
+- `gen_figures_colab.ipynb` — Colab reproduction of the manuscript diagram figures (pixel-identical)
 - `gen_gifs.py` — recovery-exercise animation guides
 - `latency_benchmark.js` — post-processing micro-benchmark (simplified REBA + fire pixel-scan; neural inference excluded)
-- `output/run_20260627_222419/` — the exact run cited in the manuscript (metrics, per-sequence CSV, confusion matrix, logs, manifest)
+- `output/run_20260627_222419/` — subset run cited in the manuscript (metrics, per-sequence CSV, confusion matrix, logs, manifest)
+- `output/run_20260722_195713_full70/` — full-benchmark run cited in the manuscript
+- `output/run_20260723_131035/` — threshold sweep + ablation run cited in the manuscript (`sweep_results.csv`, `ablation_results.csv`, sensitivity/operating-point figures)
+- `output/run_20260723_135028/` — independent re-run (reproduces the URFD metrics, sweep grid, and ablation byte-for-byte) **plus the GMDCSA-24 cross-dataset evaluation** (`eval_ds2_metrics.json`, per-clip `eval_ds2_per_clip.csv`, executed notebook)
 
 ### Manuscript figures (IEEE Access, print-size)
 
@@ -50,25 +57,40 @@ CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 | Run | Sequences | Precision | Recall | F1 | Accuracy | Median latency |
 |---|---|---|---|---|---|---|
-| `run_20260722_195713_full70` — **full benchmark** | 30 fall + 40 ADL | 0.61 | 0.77 (23/30) | 0.68 | 0.69 | 57 frames ≈ 1.9 s |
-| `run_20260627_222419` — standing-fall subset | 8 fall + 8 ADL | 0.73 | 1.00 (8/8) | 0.84 | 0.81 | 99.5 frames ≈ 3.3 s |
+| `run_20260722_195713_full70` — **full benchmark** | 30 fall + 40 ADL (URFD) | 0.61 | 0.77 (23/30) | 0.68 | 0.69 | 57 frames ≈ 1.9 s |
+| `run_20260627_222419` — standing-fall subset | 8 fall + 8 ADL (URFD) | 0.73 | 1.00 (8/8) | 0.84 | 0.81 | 99.5 frames ≈ 3.3 s |
+| `run_20260723_135028` — **GMDCSA-24 cross-dataset, no re-tuning** | 79 fall + 81 ADL | 0.66 | 1.00 (79/79) | 0.80 | 0.75 | — (not recorded) |
 
-Failure modes on the full run are structured (per-frame diagnostics): missed falls crossed the posture
-thresholds only transiently without sustaining the 700 ms confirmation window; false alarms split into
-sustained deep-bending vs deliberate lying-down classes. Both run folders under `output/` carry the full
-per-sequence CSVs and manifests.
+**Threshold sweep + ablation** (`run_20260723_131035`, reproduced byte-for-byte by
+`run_20260723_135028`): across the 7 × 5 grid F1 spans 0.586–0.686 and the deployed setting
+(52°, 700 ms) is within one point of the grid maximum; 700 ms is the F1 optimum along the
+window axis; removing the confirmation window recovers **all** missed falls (recall 1.00) but
+nearly doubles false alarms (15 → 28).
+
+Failure modes on the full URFD run are structured (per-frame diagnostics): missed falls crossed the
+posture thresholds only transiently without sustaining the 700 ms confirmation window; false alarms
+split into sustained deep-bending vs deliberate lying-down classes. On GMDCSA-24 — whose ADL set
+deliberately contains fall-like activities (lying down to sleep, push-ups) — every fall is detected and
+the false alarms land exactly on those deliberate horizontal postures (per-clip CSV in the run folder).
+All run folders under `output/` carry full per-sequence/per-clip CSVs and manifests.
 
 ## Data
 
 The [UR Fall Detection dataset (URFD)](https://fenix.ur.edu.pl/~mkepski/ds/uf.html) is publicly
-available; the notebooks download the cam0 RGB sequences directly. No new human-subject data were
-collected for this evaluation.
+available; the notebooks download the cam0 RGB sequences directly.
+The [GMDCSA-24 dataset](https://github.com/ekramalam/GMDCSA24-A-Dataset-for-Human-Fall-Detection-in-Videos)
+(Alam et al., *Data in Brief* 57:110892, 2024) is available under CC BY 4.0; the sweep notebook
+auto-downloads the pinned version 2.0 archive (79 fall + 81 ADL clips) from
+[Zenodo DOI 10.5281/zenodo.12921216](https://zenodo.org/records/12921216). No new human-subject
+data were collected for this evaluation.
 
 ## Honest-staging note
 
-Only the URFD evaluation and the post-processing micro-benchmark are **measured** results.
-Emergency 119/e-Gen linkage, radar/thermal sensing, the 12-agent harness, and all business metrics
-are design targets, as stated in the manuscript (Table 2).
+Measured results are: the URFD and GMDCSA-24 fall-detection evaluations, the threshold
+sweep / component ablation, the in-browser edge benchmark (`bench.html` on the
+[demo site](https://y3korea.github.io/shine-k/bench.html)), and the post-processing
+micro-benchmark. Emergency 119/e-Gen linkage, radar/thermal sensing, the agent harness, and all
+business metrics are design targets, as stated in the manuscript (Table 2).
 
 ## Funding
 
