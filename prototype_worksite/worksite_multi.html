@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>사업장 카메라 · 다인원 라이브 감지</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--ink:#EAF0FA;--ink2:#9FB0CC;--ink3:#6E7E9C;--a:#3182F6;--g:#16C68C;--w:#F59E0B;--r:#F04452;--p:#8B5CF6;
+    --sans:'Pretendard Variable','Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,monospace}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:#0B0F1A;color:var(--ink);overflow:hidden;letter-spacing:-.01em}
+  .mono{font-family:var(--mono)}.tnum{font-variant-numeric:tabular-nums}
+  button{font-family:inherit;cursor:pointer;border:none}
+  .top{display:flex;align-items:center;gap:13px;padding:12px 20px;background:#0E1422;border-bottom:1px solid #1c2740}
+  .mk{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#1F2433,#2B3450);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.62rem;color:#fff}
+  .ttl{font-weight:900;font-size:.92rem}.ttl .s{font-size:.62rem;color:var(--ink3);font-family:var(--mono);font-weight:700}
+  .spacer{flex:1}
+  .sens{display:flex;gap:8px;align-items:center;font-size:.66rem;color:var(--ink2);font-weight:700}
+  .sens select{font-family:inherit;background:#0B0F1A;color:var(--ink);border:1px solid #1c2740;border-radius:8px;padding:6px 8px;font-size:.66rem}
+  .conn{display:flex;align-items:center;gap:7px;font-size:.66rem;font-weight:800;color:var(--ink2);background:#0B0F1A;border:1px solid #1c2740;border-radius:50px;padding:6px 12px}
+  .conn .d{width:7px;height:7px;border-radius:50%;background:var(--g);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,198,140,.5)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+  .wrap{display:grid;grid-template-columns:1fr 330px;height:calc(100vh - 57px)}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr}}
+  .stage{position:relative;background:#06090F;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  video{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  canvas#ov{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  .statusban{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:5;display:none;align-items:center;gap:13px;padding:10px 22px;border-radius:50px;font-weight:900;font-size:.95rem;backdrop-filter:blur(8px);white-space:nowrap}
+  .statusban.normal{background:rgba(22,198,140,.16);color:#5fe6b6;border:1px solid rgba(22,198,140,.4)}
+  .statusban.warn{background:rgba(245,158,11,.18);color:#ffce6b;border:1px solid rgba(245,158,11,.5)}
+  .statusban.fall{background:rgba(240,68,82,.22);color:#ff8d96;border:1px solid rgba(240,68,82,.6);animation:flash .6s infinite}
+  .statusban .ct{font-family:var(--mono);font-size:.8rem;font-weight:800;opacity:.85}
+  @keyframes flash{50%{background:rgba(240,68,82,.4)}}
+  .overlay-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:6;text-align:center;padding:30px;background:#06090F}
+  .overlay-msg.hide{display:none}
+  .overlay-msg h2{font-size:1.3rem;font-weight:900}.overlay-msg p{font-size:.86rem;color:var(--ink2);max-width:460px;line-height:1.6}
+  .startbtn{font-size:.92rem;font-weight:800;color:#fff;background:var(--a);border-radius:12px;padding:14px 28px}
+  .startbtn:hover{background:#1B64DA}
+  .loadbar{font-family:var(--mono);font-size:.72rem;color:var(--ink3)}
+
+  .side{background:#0E1422;border-left:1px solid #1c2740;padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+  .setbox{background:#0B0F1A;border:1px solid #1c2740;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+  .setrow{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:700;color:var(--ink2)}
+  .setrow>span{min-width:58px}
+  .setrow select,.setrow input{flex:1;background:#0E1422;color:var(--ink);border:1px solid #1c2740;border-radius:7px;padding:6px 8px;font-size:.68rem;font-family:inherit}
+  .setrow input{font-family:var(--mono)}
+  .tg{margin-left:auto;font-size:.64rem;font-weight:900;border:none;border-radius:50px;padding:5px 15px;cursor:pointer;background:#33405f;color:var(--ink3)}
+  .tg.on{background:var(--g);color:#06210f}
+  .dlbtn{font-size:.72rem;font-weight:800;color:#fff;background:#33405f;border:none;border-radius:9px;padding:9px;cursor:pointer}
+  .dlbtn:hover{background:#3e4d72}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+  .metric{background:#0B0F1A;border:1px solid #1c2740;border-radius:11px;padding:11px 8px;text-align:center}
+  .metric .ml{font-size:.58rem;font-weight:800;color:var(--ink3)}
+  .metric .mv{font-size:1.35rem;font-weight:900;font-variant-numeric:tabular-nums;margin-top:3px}
+  .metric.ok .mv{color:var(--g)}.metric.warn .mv{color:var(--w)}.metric.fall .mv{color:var(--r)}
+  .ph{font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+  .plist{display:flex;flex-direction:column;gap:7px}
+  .pempty{font-size:.62rem;color:var(--ink3);font-family:var(--mono);padding:3px 2px}
+  .pcard{display:flex;align-items:center;gap:9px;background:#0B0F1A;border:1px solid #1c2740;border-left:3px solid var(--ink3);border-radius:9px;padding:8px 11px}
+  .pcard.normal{border-left-color:var(--g)}.pcard.warn{border-left-color:var(--w)}.pcard.fall{border-left-color:var(--r)}
+  .pcard .pid{font-family:var(--mono);font-size:.66rem;font-weight:800;color:var(--ink2);min-width:54px}
+  .pcard .pst{font-size:.7rem;font-weight:800}
+  .pcard.normal .pst{color:#5fe6b6}.pcard.warn .pst{color:#ffce6b}.pcard.fall .pst{color:#ff8d96}
+  .pcard .pppe{margin-left:auto;font-size:.6rem;font-weight:800;font-family:var(--mono);color:#ffce6b}
+  .pcard .pppe.ok{color:#5fe6b6}
+  .privacy{display:flex;gap:9px;align-items:flex-start;background:rgba(22,198,140,.1);border:1px solid rgba(22,198,140,.25);border-radius:11px;padding:11px 13px;font-size:.66rem;color:#7fe0b6;line-height:1.5}
+  .privacy b{color:#a6ecce}
+  .vitbox{background:#0B0F1A;border:1px solid #1c2740;border-radius:12px;padding:11px 13px}
+  .vithead{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;color:var(--ink2);margin-bottom:8px}
+  .vbtn{margin-left:auto;font-size:.62rem;font-weight:800;color:#fff;background:var(--a);border:none;border-radius:50px;padding:5px 11px;cursor:pointer}
+  .vitlist{display:flex;flex-direction:column;gap:6px}
+  .vitempty{font-size:.62rem;color:var(--ink3);font-family:var(--mono);padding:3px 2px}
+  .vitrow{display:flex;align-items:center;gap:8px;font-size:.7rem;background:#0E1422;border-radius:8px;padding:7px 10px}
+  .vitrow .vn{font-weight:800}.vitrow .vd{font-size:.54rem;color:var(--ink3);font-family:var(--mono)}
+  .vitrow .vhr{margin-left:auto;font-family:var(--mono);font-weight:900;color:var(--g)}
+  .vitrow .vhr small{font-size:.54rem;color:var(--ink3);font-weight:700}
+  .vitrow.hi .vhr{color:var(--r)}
+  .vitrow .wassign{background:#0E1422;color:var(--ink2);border:1px solid #1c2740;border-radius:6px;font-size:.55rem;font-family:var(--mono);padding:2px 5px;margin-top:3px}
+  .vib{font-size:.5rem;font-weight:800;color:var(--g)}.vib.off{color:var(--ink3)}
+  .evh{font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+  .evlog{display:flex;flex-direction:column;gap:6px;font-family:var(--mono)}
+  .ev{display:flex;gap:8px;font-size:.64rem;line-height:1.4;padding:7px 9px;background:#0B0F1A;border-radius:8px;border-left:2px solid var(--ink3)}
+  .ev.fall{border-left-color:var(--r)}.ev.warn{border-left-color:var(--w)}.ev.ok{border-left-color:var(--g)}
+  .ev .et{color:var(--ink3);flex:none}.ev .ec{color:var(--a);font-weight:800;flex:none}
+</style>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.22.0/dist/tf-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.22.0/dist/tf-converter.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.22.0/dist/tf-backend-webgl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+<script src="ppe.js"></script>
+<script src="transport.js"></script>
+<script src="store.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B0F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});</script>
+</head>
+<body>
+<div class="top">
+  <div class="mk">SHK</div>
+  <div class="ttl">사업장 카메라 · 다인원 라이브 감지<div class="s">worksite-multi · MoveNet MultiPose · on-device</div></div>
+  <div class="spacer"></div>
+  <div class="sens">민감도 <select id="sens"><option value="1">표준</option><option value="0.8">민감</option><option value="1.3">둔감</option></select></div>
+  <div class="conn"><span class="d" id="connd"></span><span id="connlbl">관제 연결 대기</span></div>
+</div>
+
+<div class="wrap">
+  <div class="stage">
+    <video id="cam" playsinline muted></video>
+    <canvas id="ov"></canvas>
+    <div class="statusban normal" id="ban"><span class="si">✓</span><span id="banlbl">정상</span><span class="ct" id="bancnt"></span></div>
+    <div class="overlay-msg" id="ovl">
+      <h2>현장 다인원 감지 시작</h2>
+      <p>한 화면에서 <b>여러 작업자</b>를 동시에 인식해 사람별로 <b>낙상·미끄러짐·PPE 미착용</b>을 판정합니다. 영상은 이 기기를 떠나지 않고, 관제로는 <b>사람별 골격·이벤트</b>만 전송됩니다.</p>
+      <button class="startbtn" id="start">▶ 카메라 시작</button>
+      <div class="loadbar" id="load"></div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="setbox">
+      <div class="setrow"><span>카메라</span><select id="camsel"><option>기본 카메라</option></select></div>
+      <div class="setrow"><span>구역 ID</span><input id="camid" type="text" placeholder="CAM-1"></div>
+      <div class="setrow"><span>기업</span><input id="orgid" type="text" placeholder="경운대"></div>
+      <div class="setrow"><span>사업장</span><input id="siteid" type="text" placeholder="A동"></div>
+      <div class="setrow"><span>전송주기</span><select id="ivsel"><option value="200">실시간</option><option value="1000">1초</option><option value="3000">3초</option><option value="5000">5초</option></select></div>
+      <div class="setrow"><span>관제 송신</span><button class="tg on" id="txbtn" type="button">ON</button></div>
+      <div class="setrow"><span>좌표 저장</span><button class="tg on" id="stbtn" type="button">ON</button></div>
+      <div class="setrow"><span>경고음</span><button class="tg on" id="sndbtn" type="button">ON</button></div>
+      <div class="setrow"><span>안전모 감지</span><button class="tg on" id="ppebtn" type="button">ON</button></div>
+      <div class="setrow"><span>가상장구</span><button class="tg on" id="gearbtn" type="button">ON</button></div>
+      <div class="setrow"><span>음성 안내</span><button class="tg on" id="voicebtn" type="button">ON</button></div>
+      <button class="dlbtn" id="dl" type="button">⬇ 좌표 CSV 저장 (<span id="cnt">0</span>건)</button>
+    </div>
+    <div class="setbox">
+      <div class="ph" style="margin-bottom:2px">경보 출력 · 업주 선택</div>
+      <div class="setrow"><span>화면 경보</span><button class="tg on" id="outScreen" type="button">ON</button></div>
+      <div class="setrow"><span>유선·내장 스피커</span><button class="tg" id="spkTest" type="button">🔊 테스트</button></div>
+      <div class="setrow"><span>경광등·플래시(허브)</span><button class="tg" id="outMqtt" type="button">OFF</button></div>
+      <div class="setrow"><span>경광등(BLE직결)</span><button class="tg" id="outBle" type="button">OFF</button></div>
+      <button class="dlbtn" id="bleSirenBtn" type="button">+ 경광등/사이렌 BLE 연결</button>
+    </div>
+    <div class="row3">
+      <div class="metric ok"><div class="ml">현재 인원</div><div class="mv tnum"><span id="mN">0</span></div></div>
+      <div class="metric warn"><div class="ml">주의</div><div class="mv tnum"><span id="mWarn">0</span></div></div>
+      <div class="metric fall"><div class="ml">위험</div><div class="mv tnum"><span id="mDanger">0</span></div></div>
+    </div>
+    <div>
+      <div class="ph" style="margin-bottom:8px">작업자 목록 (사람별 추적)</div>
+      <div class="plist" id="plist"><div class="pempty">감지 대기 중…</div></div>
+    </div>
+    <div class="privacy">🔒 <div><b>프라이버시:</b> 원본 영상은 전송하지 않습니다. 관제로는 <b>사람별 골격 좌표(x,y)·경보</b>만 전송하며, 좌표는 현장에서 가명 ID로 저장됩니다. 근로자 동의·목적(안전)·보존기한 하에 처리하세요.</div></div>
+    <div class="vitbox">
+      <div class="vithead"><span>작업자 바이탈 (BLE)</span><button class="vbtn" id="watchBtn" type="button">+ 워치 연결</button></div>
+      <div class="vitlist" id="vitlist"><div class="vitempty">연결된 워치 없음</div></div>
+    </div>
+    <div class="evh">이벤트 로그</div>
+    <div class="evlog" id="evlog"></div>
+  </div>
+</div>
+
+<script>
+var $=function(id){return document.getElementById(id);};
+function setConn(ok,lbl){$('connd').style.background=ok?'var(--g)':'var(--r)';$('connlbl').textContent=lbl;}
+var bus=SHKBus({onConn:setConn});
+var _rawSend=bus.send; bus.send=function(o){if(!transmitOn)return; o.org=ORG; o.site=SITE; _rawSend(o);};  // 관제 송신 + 기업·사업장 태그 자동 부착
+
+var video=$('cam'),ov=$('ov'),octx=ov.getContext('2d');
+var detector=null, sensFactor=1;
+$('sens').addEventListener('change',function(e){sensFactor=+e.target.value;});
+
+// COCO-17 (MoveNet) 골격 연결
+var CONN=[[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16],[0,5],[0,6]];
+var _P=new URLSearchParams(location.search);
+var CAM=_P.get('cam')||localStorage.getItem('shk_cam')||'CAM-1';
+var ORG=_P.get('org')||localStorage.getItem('shk_org')||'경운대';
+var SITE=_P.get('site')||localStorage.getItem('shk_site')||'A동';
+var transmitOn=_P.get('tx')!=='0', storeOn=true, soundOn=true, ppeOn=true, gearOn=true;
+var sendMs=Math.max(150,+(_P.get('iv')||200));
+var coordLog=[];
+
+// 사람별 상태: trackId -> person
+var people={}, sendAcc=0, lastT=0;
+function newWid(){return 'W-'+(Math.floor(Math.random()*9000)+1000);}
+
+$('start').addEventListener('click',startAll);
+async function startAll(){
+  $('start').disabled=true;$('load').textContent='AI 모델 로딩 중… (MoveNet MultiPose)';
+  try{
+    await tf.setBackend('webgl'); await tf.ready();
+    detector=await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet,{
+      modelType:poseDetection.movenet.modelType.MULTIPOSE_LIGHTNING,
+      enableTracking:true,
+      trackerType:poseDetection.TrackerType.BoundingBox
+    });
+    $('load').textContent='카메라 권한 요청 중…';
+    var stream=await navigator.mediaDevices.getUserMedia({video:{width:1280,height:960},audio:false});
+    video.srcObject=stream;await video.play();
+    initAudio();
+    $('ovl').classList.add('hide');$('ban').style.display='flex';
+    loop();listCams();startPPE();
+  }catch(e){
+    $('load').textContent='⚠ '+(e.message||'오류')+' — 카메라/네트워크를 확인하세요.';$('start').disabled=false;
+  }
+}
+
+function addEv(kind,cam,msg){
+  var t=new Date().toLocaleTimeString('ko-KR',{hour12:false});
+  var row=document.createElement('div');row.className='ev '+kind;
+  row.innerHTML='<span class="et">'+t+'</span><span class="ec">'+(cam||'')+'</span><span>'+msg+'</span>';
+  $('evlog').insertBefore(row,$('evlog').firstChild);
+  while($('evlog').children.length>16)$('evlog').removeChild($('evlog').lastChild);
+}
+function fmt(n,d){return (n==null||isNaN(n))?'—':n.toFixed(d==null?1:d);}
+
+async function loop(){
+  if(!detector){return;}
+  var now=performance.now();
+  if(video.readyState>=2){
+    ov.width=video.videoWidth;ov.height=video.videoHeight;
+    var poses=[];
+    try{poses=await detector.estimatePoses(video,{flipHorizontal:false});}catch(e){}
+    octx.clearRect(0,0,ov.width,ov.height);
+    var seen={};
+    poses.forEach(function(ps){
+      var good=0; for(var gi=0;gi<ps.keypoints.length;gi++){if(ps.keypoints[gi].score>0.3)good++;}
+      if(good<5)return;  // 유령 검출 방지(신뢰 관절 5개 미만 무시)
+      var id=(ps.id!=null?ps.id:0);
+      var P=people[id]||(people[id]={wid:newWid(),state:'normal',downSince:0,staticSince:0,hipHist:[],lastKp:null,ppe:{helmet:false,mask:false,vest:false},_ppeKey:'',bbox:null,skp:null});
+      P.kp=smoothKp(P,ps.keypoints); P.last=now; seen[id]=1;
+      P.bbox=bboxOf(P.kp);
+      analyzePerson(P,now);
+      drawSkeleton(P);
+      _gearDemo = gearOn && (!SHKPPE.loaded || (now-_ppeLastDet>5000));  // 모델 미감지 시 AR 데모 표시
+      if(gearOn)drawGear(P,now);
+      drawTag(P);
+    });
+    // 사라진 사람 정리
+    Object.keys(people).forEach(function(k){if(!seen[k]&&now-people[k].last>1500)delete people[k];});
+    drawPpeDiag();
+    // 주기 전송
+    sendAcc+=now-(lastT||now);
+    if(sendAcc>sendMs){sendAcc=0;broadcast();}
+    refreshPanel();
+  }
+  lastT=now;
+  requestAnimationFrame(loop);
+}
+
+// 영상 위 PPE 진단 배너 (스크롤 없이 바로 보임)
+var _ppeDiagText='PPE: 모델 로딩 대기…', _ppeDiagOn=true, _gearDemo=false, _ppeLastDet=0;
+function drawPpeDiag(){
+  if(!_ppeDiagOn)return;
+  octx.save();octx.scale(-1,1);octx.translate(-ov.width,0);  // 거울 보정
+  var pad=Math.max(10,ov.width*0.01), fs=Math.max(15,ov.width*0.014);
+  octx.font='700 '+fs+'px ui-monospace,monospace';
+  var lines=String(_ppeDiagText).split('\n');
+  var w=0;lines.forEach(function(l){w=Math.max(w,octx.measureText(l).width);});
+  octx.fillStyle='rgba(11,15,26,.82)';octx.fillRect(pad-6,pad-4,w+16,lines.length*(fs+6)+8);
+  lines.forEach(function(l,i){octx.fillStyle=i===0?'#7ab0ff':'#EAF0FA';octx.fillText(l,pad+2,pad+fs+i*(fs+6));});
+  octx.restore();
+}
+function KP(P,i){var k=P.kp[i];return (k&&k.score>0.3)?{x:k.x,y:k.y,v:k.score}:null;}
+function bboxOf(kp){var xs=[],ys=[];kp.forEach(function(k){if(k.score>0.3){xs.push(k.x);ys.push(k.y);}});if(xs.length<2)return null;
+  return {x1:Math.min.apply(0,xs),y1:Math.min.apply(0,ys),x2:Math.max.apply(0,xs),y2:Math.max.apply(0,ys)};}
+function smoothKp(P,raw){  // EMA 평활 — 골격 떨림 완화(정확도·가독성)
+  var a=0.45;
+  if(!P.skp){P.skp=raw.map(function(k){return {x:k.x,y:k.y,score:k.score};});return P.skp;}
+  for(var i=0;i<raw.length;i++){var s=P.skp[i],r=raw[i];if(r.score>0.3){s.x+=(r.x-s.x)*a;s.y+=(r.y-s.y)*a;}s.score=r.score;}
+  return P.skp;
+}
+
+function analyzePerson(P,now){
+  var shL=KP(P,5),shR=KP(P,6),hipL=KP(P,11),hipR=KP(P,12);
+  if(!shL||!shR){P.state='normal';return;}
+  var shX=(shL.x+shR.x)/2, shY=(shL.y+shR.y)/2;
+  var hpX,hpY;
+  if(hipL&&hipR){hpX=(hipL.x+hipR.x)/2;hpY=(hipL.y+hipR.y)/2;}
+  else{hpX=shX;hpY=shY+Math.hypot(shR.x-shL.x,shR.y-shL.y)*1.4;}
+  var dx=shX-hpX, dy=shY-hpY;
+  var tilt=Math.atan2(Math.abs(dx),Math.abs(dy))*180/Math.PI;
+  // bbox aspect
+  var b=P.bbox, aspect=b?((b.x2-b.x1)/Math.max(1,(b.y2-b.y1))):0;
+  // 엉덩이 수직 속도 (px/s 정규화 → 화면높이 비율)
+  P.hipHist.push({y:hpY/ov.height,t:now});while(P.hipHist.length>8)P.hipHist.shift();
+  var vel=0;if(P.hipHist.length>=2){var a=P.hipHist[0],z=P.hipHist[P.hipHist.length-1];vel=(z.y-a.y)/Math.max(0.001,(z.t-a.t)/1000);}
+  // 활동량
+  var keyI=[0,5,6,9,10,11,12,15,16], mv=0;
+  if(P.lastKp){var sm=0,nm=0;keyI.forEach(function(i){var c=P.kp[i],l=P.lastKp[i];if(c&&l&&c.score>0.3&&l.score>0.3){sm+=Math.hypot((c.x-l.x)/ov.width,(c.y-l.y)/ov.height);nm++;}});mv=nm?sm/nm:0;}
+  P.lastKp=P.kp.map(function(k){return {x:k.x,y:k.y,score:k.score};});
+  P.tilt=tilt;P.vel=vel;
+
+  var TILT_DOWN=52*sensFactor, ASP_DOWN=1.0*sensFactor, VEL_DROP=0.9/sensFactor;
+  var isDown=(tilt>TILT_DOWN)||(aspect>ASP_DOWN);
+  var rapid=vel>VEL_DROP;
+  var conf=isDown?Math.min(0.99,0.55+(tilt/120)+(aspect>1?0.2:0)):0;
+  P.conf=conf;
+  var prev=P.state;
+  if(isDown){ if(!P.downSince)P.downSince=now; P.state=(now-P.downSince>700)?'fall':'warn'; }
+  else if(rapid){ P.state='warn';P.downSince=0; }
+  else { P.state='normal';P.downSince=0; }
+  if(P.state==='normal'){
+    if(mv<0.0045){ if(!P.staticSince)P.staticSince=now; var ss=(now-P.staticSince)/1000;
+      if(mv<0.0016&&ss>12)P.state='inactive'; else if(ss>25)P.state='sedentary'; }
+    else P.staticSince=0;
+  } else P.staticSince=0;
+
+  if(P.state!==prev){
+    if(P.state==='fall'){addEv('fall',CAM,P.wid+' 낙상 확정 · conf '+fmt(conf*100,0)+'%');bus.send({type:'alert',cam:CAM,wid:P.wid,kind:'fall',conf:conf,t:Date.now()});if(soundOn)startSiren();}
+    else if(P.state==='inactive'){addEv('fall',CAM,P.wid+' 부동(무동작) — 의식확인');bus.send({type:'alert',cam:CAM,wid:P.wid,kind:'inactive',conf:0.7,t:Date.now()});if(soundOn)startSiren();}
+    else if(P.state==='warn'){addEv('warn',CAM,P.wid+(rapid?' 급강하 감지':' 자세 이상'));bus.send({type:'alert',cam:CAM,wid:P.wid,kind:'slip',conf:0.6,t:Date.now()});if(soundOn)beep(660,0.13,0.3);}
+    else if(P.state==='sedentary'){addEv('warn',CAM,P.wid+' 장시간 좌업');bus.send({type:'alert',cam:CAM,wid:P.wid,kind:'sedentary',conf:0.5,t:Date.now()});if(soundOn)beep(880,0.16,0.3);}
+    else{addEv('ok',CAM,P.wid+' 정상 복귀');if(!anyDanger())stopSiren();}
+  }
+}
+function anyDanger(){return Object.keys(people).some(function(k){var s=people[k].state;return s==='fall'||s==='inactive';});}
+
+function stcol(s){return (s==='fall'||s==='inactive')?'#F04452':(s==='warn'||s==='sedentary')?'#F59E0B':'#16C68C';}
+function drawSkeleton(P){
+  var col=stcol(P.state);
+  octx.strokeStyle=col;octx.lineWidth=4;octx.lineCap='round';
+  CONN.forEach(function(c){var a=KP(P,c[0]),b=KP(P,c[1]);if(!a||!b)return;octx.beginPath();octx.moveTo(a.x,a.y);octx.lineTo(b.x,b.y);octx.stroke();});
+  octx.fillStyle=col;
+  P.kp.forEach(function(k,i){if(k.score<0.35)return;octx.beginPath();octx.arc(k.x,k.y,i===0?6:4,0,7);octx.fill();});
+}
+function drawTag(P){
+  if(!P.bbox)return;
+  var b=P.bbox, pad=Math.max(6,ov.width*0.006);
+  var bx=b.x1-pad, by=b.y1-pad, bw=(b.x2-b.x1)+pad*2, bh=(b.y2-b.y1)+pad*2;
+  var col=stcol(P.state);
+  // 코너브래킷 바운딩박스 (CCTV 스타일) — 캔버스 미러라 그대로 그림
+  octx.save();
+  octx.strokeStyle=col;octx.globalAlpha=0.35;octx.lineWidth=Math.max(1,ov.width*0.0015);
+  octx.strokeRect(bx,by,bw,bh);                                   // 얇은 풀박스
+  octx.globalAlpha=1;octx.lineWidth=Math.max(2.5,ov.width*0.004);octx.lineCap='round';
+  var cl=Math.min(bw,bh)*0.22;  // 코너 길이
+  function corner(cx,cy,sx,sy){octx.beginPath();octx.moveTo(cx+sx*cl,cy);octx.lineTo(cx,cy);octx.lineTo(cx,cy+sy*cl);octx.stroke();}
+  corner(bx,by,1,1);corner(bx+bw,by,-1,1);corner(bx,by+bh,1,-1);corner(bx+bw,by+bh,-1,-1);
+  octx.restore();
+  // 라벨 (거울 보정 — 읽기 정상)
+  var x=bx, y=by-2;
+  var lbl=({normal:'자세정상',warn:'주의',fall:'위험',sedentary:'좌업',inactive:'부동'})[P.state]||'자세정상';
+  var miss=[];if(P.ppe.helmet)miss.push('안전모');if(P.ppe.mask)miss.push('마스크');if(P.ppe.vest)miss.push('조끼');
+  var txt=P.wid+' · '+lbl+(miss.length?(' · 🦺'+miss.join('·')):'');
+  octx.save();octx.scale(-1,1);octx.translate(-ov.width,0);
+  var fx=ov.width-x;
+  octx.font='700 '+Math.max(13,ov.width*0.012)+'px ui-monospace,monospace';
+  var w=octx.measureText(txt).width+12, lh=Math.max(17,ov.width*0.016);
+  octx.fillStyle=col;octx.fillRect(fx-w,y-lh,w,lh);
+  octx.fillStyle='#06090F';octx.fillText(txt,fx-w+6,y-5);
+  octx.restore();
+}
+
+// ---- 가상 PPE 오버레이 (사람별, COCO-17) ----
+function drawGear(P,now){
+  var blink=0.5+0.45*Math.abs(Math.sin(now/280));
+  var nose=KP(P,0),eL=KP(P,1),eR=KP(P,2),earL=KP(P,3),earR=KP(P,4),shL=KP(P,5),shR=KP(P,6),hipL=KP(P,11),hipR=KP(P,12);
+  if(!nose&&!shL)return;
+  var headW=(earL&&earR)?Math.hypot(earR.x-earL.x,earR.y-earL.y):((eL&&eR)?Math.hypot(eR.x-eL.x,eR.y-eL.y)*2.2:0);
+  var eyesMid=(eL&&eR)?{x:(eL.x+eR.x)/2,y:(eL.y+eR.y)/2}:(nose?{x:nose.x,y:nose.y}:null);
+  var upAng=(eyesMid&&nose)?Math.atan2(eyesMid.y-nose.y,eyesMid.x-nose.x):-Math.PI/2;  // 코→눈 = 위
+  var theta=upAng+Math.PI/2;
+  var faceDown={x:-Math.cos(upAng),y:-Math.sin(upAng)};
+  var faceRight={x:-Math.sin(upAng),y:Math.cos(upAng)};
+
+  if((P.ppe.helmet||_gearDemo) && headW>4 && eyesMid){
+    var hw=headW;
+    var yaw=nose?((nose.x-eyesMid.x)*faceRight.x+(nose.y-eyesMid.y)*faceRight.y)/hw:0; yaw=Math.max(-0.45,Math.min(0.45,yaw));
+    var sx=yaw*hw*0.18, by=-hw*0.4;
+    octx.save();octx.translate(eyesMid.x,eyesMid.y);octx.rotate(theta);octx.globalAlpha=0.4+0.2*blink;
+    octx.fillStyle='#FFCE3A';octx.strokeStyle='#7a5e00';octx.lineWidth=Math.max(2,hw*0.045);octx.lineJoin='round';octx.lineCap='round';
+    octx.beginPath();octx.ellipse(sx*0.7,by,hw*0.72,hw*0.12,0,0,2*Math.PI);octx.fill();octx.stroke();
+    octx.beginPath();octx.ellipse(sx,by,hw*0.58,hw*0.46,0,Math.PI,2*Math.PI);octx.closePath();octx.fill();octx.stroke();
+    octx.strokeStyle='#c79f00';octx.lineWidth=Math.max(2,hw*0.045);
+    octx.beginPath();octx.moveTo(sx,by-hw*0.44);octx.lineTo(sx,by);octx.stroke();
+    octx.beginPath();octx.ellipse(sx,by,hw*0.4,hw*0.32,0,Math.PI,2*Math.PI);octx.stroke();
+    octx.restore();
+  }
+  if((P.ppe.mask||_gearDemo) && nose && headW>4){
+    var mc={x:nose.x+faceDown.x*headW*0.33,y:nose.y+faceDown.y*headW*0.33};
+    var half=headW*0.5,topW=headW*0.42,midW=headW*0.44,chinW=headW*0.22;
+    octx.save();octx.translate(mc.x,mc.y);octx.rotate(theta);octx.globalAlpha=0.26+0.12*blink;
+    octx.fillStyle='#EAF2FB';octx.strokeStyle='#9db9d8';octx.lineWidth=Math.max(1.5,headW*0.022);octx.lineJoin='round';
+    octx.beginPath();octx.moveTo(-topW,-half);
+    octx.quadraticCurveTo(0,-half-headW*0.06,topW,-half);
+    octx.quadraticCurveTo(midW,0,chinW,half*0.82);
+    octx.quadraticCurveTo(0,half*1.04,-chinW,half*0.82);
+    octx.quadraticCurveTo(-midW,0,-topW,-half);
+    octx.closePath();octx.fill();octx.stroke();
+    octx.strokeStyle='rgba(120,150,185,.5)';octx.lineWidth=Math.max(1,headW*0.014);
+    for(var p=0;p<3;p++){var yy=(-0.16+p*0.22)*headW;octx.beginPath();octx.moveTo(-midW*0.78,yy);octx.quadraticCurveTo(0,yy+headW*0.04,midW*0.78,yy);octx.stroke();}
+    octx.restore();
+  }
+  if((P.ppe.vest||_gearDemo) && shL && shR){
+    var swid=Math.hypot(shR.x-shL.x,shR.y-shL.y);
+    var sc={x:(shL.x+shR.x)/2,y:(shL.y+shR.y)/2};
+    var hipC=(hipL&&hipR)?{x:(hipL.x+hipR.x)/2,y:(hipL.y+hipR.y)/2}:null;
+    var dvx,dvy; if(hipC){dvx=hipC.x-sc.x;dvy=hipC.y-sc.y;} else{var ax=shR.x-shL.x,ay=shR.y-shL.y;dvx=ay;dvy=-ax;if(dvy<0){dvx=-dvx;dvy=-dvy;}}
+    var dl=Math.hypot(dvx,dvy)||1, down={x:dvx/dl,y:dvy/dl}, right={x:-down.y,y:down.x};
+    var len=Math.max(swid*1.1,Math.min(swid*1.6, hipC?Math.hypot(hipC.x-sc.x,hipC.y-sc.y):swid*1.35)), lenD=len/swid;
+    function PT(a,d){return {x:sc.x+right.x*(a*swid)+down.x*(d*swid),y:sc.y+right.y*(a*swid)+down.y*(d*swid)};}
+    var oL=PT(-0.46,-0.05),oR=PT(0.46,-0.05),nL=PT(-0.17,0.02),nR=PT(0.17,0.02),ndip=PT(0,0.22),bL=PT(-0.34,lenD),bR=PT(0.34,lenD);
+    octx.save();octx.globalAlpha=0.28+0.14*blink;octx.lineJoin='round';
+    octx.fillStyle='#C6F23A';octx.strokeStyle='#6f8a16';octx.lineWidth=Math.max(2,swid*0.03);
+    octx.beginPath();octx.moveTo(oL.x,oL.y);octx.lineTo(nL.x,nL.y);octx.lineTo(ndip.x,ndip.y);octx.lineTo(nR.x,nR.y);octx.lineTo(oR.x,oR.y);octx.lineTo(bR.x,bR.y);octx.lineTo(bL.x,bL.y);octx.closePath();octx.fill();octx.stroke();
+    octx.strokeStyle='rgba(228,238,248,.92)';octx.lineWidth=Math.max(3,swid*0.06);
+    octx.beginPath();octx.moveTo(PT(-0.2,0.3).x,PT(-0.2,0.3).y);octx.lineTo(PT(-0.2,lenD*0.96).x,PT(-0.2,lenD*0.96).y);octx.stroke();
+    octx.beginPath();octx.moveTo(PT(0.2,0.3).x,PT(0.2,0.3).y);octx.lineTo(PT(0.2,lenD*0.96).x,PT(0.2,lenD*0.96).y);octx.stroke();
+    octx.restore();
+  }
+}
+
+// ---- PPE 미착용 감지 (YOLOv11 ONNX) → 사람별 배정 ----
+var ppeTimer=null,_ppeLogged=false,_ppeDiag=0,_ppeCls={helmet:false,mask:false,vest:false};
+async function startPPE(){
+  if(typeof ort==='undefined'||!window.SHKPPE){addEv('warn',CAM,'onnxruntime 미로드 — 안전모 감지 불가');return;}
+  try{ var ok=await SHKPPE.load('ppe.onnx');
+    if(ok){if(ppeTimer)clearInterval(ppeTimer);ppeTimer=setInterval(runPPE,800);addEv('ok',CAM,'안전모(PPE) 감지 모델 로드됨');}
+    else addEv('warn',CAM,'ppe.onnx 없음/로드실패 — 안전모 감지 꺼짐');
+  }catch(e){addEv('warn',CAM,'PPE 로드 실패: '+(e.message||e));}
+}
+async function runPPE(){
+  if(!ppeOn||!SHKPPE.loaded||video.readyState<2)return;
+  var dets;try{dets=await SHKPPE.detect(video,0.25);}catch(e){_ppeDiagText='PPE: 추론 오류 '+(e.message||e);return;}
+  // 진단: 영상 위 배너 + 처음 8회 이벤트 로그
+  var head='PPE 모델: 클래스 '+SHKPPE.classes+'개 / NAMES '+SHKPPE.nameCount+'개';
+  if(dets.length){var top=dets.slice(0,5).map(function(d){return d.name+' '+Math.round(d.score*100)+'%';}).join(', ');_ppeDiagText=head+'\n감지: '+top;_ppeLastDet=performance.now();}
+  else _ppeDiagText=head+'\n감지된 객체 없음'+(_gearDemo?' · AR 데모 모드':'')+' (조명·거리·임계값 확인)';
+  if(_ppeDiag<8){
+    if(_ppeDiag===0)addEv('ok',CAM,'PPE 모델 클래스 '+SHKPPE.classes+'개 (ppe.js NAMES '+SHKPPE.nameCount+'개)');
+    if(dets.length){var t2=dets.slice(0,5).map(function(d){return d.name+'('+Math.round(d.score*100)+'%)';}).join(', ');addEv('warn',CAM,'감지: '+t2);}
+    else addEv('warn',CAM,'감지된 객체 없음');
+    _ppeDiag++;
+  }
+  var sxr=ov.width/640, syr=ov.height/640;
+  // 감지가 전혀 없으면 판정 보류(오경보 방지) — AR은 데모 모드가 처리
+  if(!dets.length){Object.keys(people).forEach(function(k){people[k].ppe={helmet:false,mask:false,vest:false};people[k]._ppeKey='';});return;}
+  // 사람별 착용(positive)·미착용(negative) 집계
+  Object.keys(people).forEach(function(k){var P=people[k];P._seen={helmet:false,mask:false,vest:false};P._neg={helmet:false,mask:false,vest:false};});
+  dets.forEach(function(d){
+    var n=(d.name||''),nl=n.toLowerCase();
+    var type=/hardhat|helmet|head/.test(nl)?'helmet':/mask/.test(nl)?'mask':/vest/.test(nl)?'vest':null;
+    if(!type)return;
+    var negEx=/^no[-_ ]/i.test(n)||/^head$/.test(nl);   // NO-Hardhat 등 또는 head(맨머리)=미착용
+    var cx=d.box[0]*sxr, cy=d.box[1]*syr;
+    var P=nearestPerson(cx,cy); if(!P)return;
+    if(negEx)P._neg[type]=true; else {P._seen[type]=true; _ppeCls[type]=true;}  // 착용 클래스 존재 학습
+  });
+  // 미착용 판정 = 명시적 미착용  OR  (착용클래스 존재하는데 착용 미감지)
+  Object.keys(people).forEach(function(k){var P=people[k];
+    P.ppe={
+      helmet:P._neg.helmet||(_ppeCls.helmet&&!P._seen.helmet),
+      mask:  P._neg.mask  ||(_ppeCls.mask  &&!P._seen.mask),
+      vest:  P._neg.vest  ||(_ppeCls.vest  &&!P._seen.vest)
+    };
+  });
+  // 사람별 경보(변화 시) — 착용하면 miss 빠지고 자동 해제
+  Object.keys(people).forEach(function(k){var P=people[k];
+    var miss=[];if(P.ppe.helmet)miss.push('안전모');if(P.ppe.mask)miss.push('마스크');if(P.ppe.vest)miss.push('조끼');
+    var key=miss.sort().join(',');
+    if(key&&key!==P._ppeKey){addEv('warn',CAM,P.wid+' PPE 미착용: '+miss.join('·'));bus.send({type:'alert',cam:CAM,wid:P.wid,kind:'ppe',detail:miss.join('·'),conf:0.6,t:Date.now()});if(soundOn)beep(620,0.13,0.3);}
+    P._ppeKey=key;
+  });
+}
+function nearestPerson(x,y){
+  var best=null,bd=1e9;
+  Object.keys(people).forEach(function(k){var P=people[k],b=P.bbox;if(!b)return;
+    var cx=(b.x1+b.x2)/2, cy=(b.y1+b.y2)/2;
+    var inside=(x>=b.x1&&x<=b.x2&&y>=b.y1&&y<=b.y2);
+    var dd=inside?0:Math.hypot(x-cx,y-cy);
+    if(dd<bd){bd=dd;best=P;}
+  });
+  // 너무 멀면 무시 (화면폭의 30% 초과)
+  return (best && bd<ov.width*0.3)?best:null;
+}
+
+// ---- 전송·패널 ----
+function broadcast(){
+  var ks=Object.keys(people);
+  bus.send({type:'obj',cam:CAM,persons:ks.length,t:Date.now()});
+  ks.forEach(function(k){var P=people[k];if(!P.kp)return;
+    var lm=P.kp.map(function(p){return [Math.round(p.x/ov.width*1000)/1000,Math.round(p.y/ov.height*1000)/1000,Math.round((p.score||0)*100)/100];});
+    bus.send({type:'pose',v:2,cam:CAM,wid:P.wid,kp:'coco17',t:Date.now(),lm:lm});
+    bus.send({type:'state',v:2,cam:CAM,wid:P.wid,state:P.state,tilt:Math.round(P.tilt||0),vel:Math.round((P.vel||0)*100)/100,ppe:{h:P.ppe.helmet?1:0,m:P.ppe.mask?1:0,v:P.ppe.vest?1:0},t:Date.now()});
+    if(storeOn){coordLog.push({t:Date.now(),wid:P.wid,lm:lm});if(coordLog.length>9000)coordLog.shift();
+      if(window.SHKStore)SHKStore.add({t:Date.now(),type:'pose',cam:CAM,wid:P.wid,lm:lm});}
+  });
+  if(storeOn){$('cnt').textContent=coordLog.length;}
+}
+function refreshPanel(){
+  var ks=Object.keys(people), n=ks.length;
+  var warn=0,danger=0;
+  ks.forEach(function(k){var s=people[k].state;if(s==='fall'||s==='inactive')danger++;else if(s==='warn'||s==='sedentary')warn++;});
+  $('mN').textContent=n;$('mWarn').textContent=warn;$('mDanger').textContent=danger;
+  // 상단 배너
+  var ban=$('ban');
+  if(danger){ban.className='statusban fall';$('banlbl').textContent='위험 감지';}
+  else if(warn){ban.className='statusban warn';$('banlbl').textContent='주의';}
+  else{ban.className='statusban normal';$('banlbl').textContent='자세정상';}
+  $('bancnt').textContent='현장 '+n+'명'+(danger?(' · 위험 '+danger):'')+(warn?(' · 주의 '+warn):'');
+  $('ban').style.display=outScreen?'flex':'none';
+  // 작업자 목록
+  var box=$('plist');
+  if(!n){box.innerHTML='<div class="pempty">감지 대기 중…</div>';return;}
+  box.innerHTML=ks.map(function(k){var P=people[k];
+    var cls=(P.state==='fall'||P.state==='inactive')?'fall':(P.state==='warn'||P.state==='sedentary')?'warn':'normal';
+    var lbl=({normal:'자세정상',warn:'자세이상',fall:'낙상',sedentary:'좌업',inactive:'부동'})[P.state]||'자세정상';
+    var miss=[];if(P.ppe.helmet)miss.push('안전모');if(P.ppe.mask)miss.push('마스크');if(P.ppe.vest)miss.push('조끼');
+    var ppe=miss.length?('🦺'+miss.join('·')):'<span class="ok">PPE 정상</span>';
+    return '<div class="pcard '+cls+'"><span class="pid">'+P.wid+'</span><span class="pst">'+lbl+'</span><span class="pppe'+(miss.length?'':' ok')+'">'+ppe+'</span></div>';
+  }).join('');
+}
+
+// ---- 컨트롤 ----
+$('ivsel').value=String(sendMs);
+$('ivsel').addEventListener('change',function(){sendMs=Math.max(150,+this.value);});
+$('camid').value=CAM;
+$('camid').addEventListener('change',function(){CAM=(this.value.trim()||'CAM-1');localStorage.setItem('shk_cam',CAM);});
+$('orgid').value=ORG;
+$('orgid').addEventListener('change',function(){ORG=(this.value.trim()||'경운대');localStorage.setItem('shk_org',ORG);});
+$('siteid').value=SITE;
+$('siteid').addEventListener('change',function(){SITE=(this.value.trim()||'A동');localStorage.setItem('shk_site',SITE);});
+$('txbtn').addEventListener('click',function(){transmitOn=!transmitOn;this.className='tg'+(transmitOn?' on':'');this.textContent=transmitOn?'ON':'OFF';});
+$('stbtn').addEventListener('click',function(){storeOn=!storeOn;this.className='tg'+(storeOn?' on':'');this.textContent=storeOn?'ON':'OFF';});
+$('ppebtn').addEventListener('click',function(){ppeOn=!ppeOn;this.className='tg'+(ppeOn?' on':'');this.textContent=ppeOn?'ON':'OFF';if(!ppeOn)Object.keys(people).forEach(function(k){people[k].ppe={helmet:false,mask:false,vest:false};});});
+$('gearbtn').addEventListener('click',function(){gearOn=!gearOn;this.className='tg'+(gearOn?' on':'');this.textContent=gearOn?'ON':'OFF';});
+$('sndbtn').addEventListener('click',function(){soundOn=!soundOn;this.className='tg'+(soundOn?' on':'');this.textContent=soundOn?'ON':'OFF';if(!soundOn)stopSiren();else initAudio();});
+$('voicebtn').addEventListener('click',function(){voiceOn=!voiceOn;this.className='tg'+(voiceOn?' on':'');this.textContent=voiceOn?'ON':'OFF';if(!voiceOn&&'speechSynthesis'in window)speechSynthesis.cancel();});
+$('outScreen').addEventListener('click',function(){outScreen=!outScreen;this.className='tg'+(outScreen?' on':'');this.textContent=outScreen?'ON':'OFF';});
+$('outMqtt').addEventListener('click',function(){outMqtt=!outMqtt;this.className='tg'+(outMqtt?' on':'');this.textContent=outMqtt?'ON':'OFF';if(!outMqtt&&_sirenOn){bus.send({type:'siren',cam:CAM,cmd:'off',t:Date.now()});_sirenOn=false;}});
+$('outBle').addEventListener('click',function(){outBle=!outBle;this.className='tg'+(outBle?' on':'');this.textContent=outBle?'ON':'OFF';});
+$('bleSirenBtn').addEventListener('click',connectBleSiren);
+$('spkTest').addEventListener('click',function(){initAudio();beep(880,0.18,0.4);setTimeout(function(){beep(660,0.18,0.4);},230);if('speechSynthesis'in window){try{var u=new SpeechSynthesisUtterance('스피커 출력 테스트입니다. 안전모를 착용하세요.');u.lang='ko-KR';speechSynthesis.speak(u);}catch(e){}}addEv('ok',CAM,'스피커 출력 테스트');});
+async function connectBleSiren(){
+  if(!navigator.bluetooth){alert('이 브라우저는 Web Bluetooth를 지원하지 않습니다.');return;}
+  try{
+    var dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['6e400001-b5a3-f393-e0a9-e50e24dcca9e','immediate_alert','battery_service']});
+    var srv=await dev.gatt.connect();
+    try{var u=await srv.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');bleSirenCh=await u.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');bleSirenType='uart';}
+    catch(_){try{var ia=await srv.getPrimaryService('immediate_alert');bleSirenCh=await ia.getCharacteristic('alert_level');bleSirenType='ias';}catch(__){}}
+    if(bleSirenCh){outBle=true;$('outBle').className='tg on';$('outBle').textContent='ON';$('bleSirenBtn').textContent='✓ 경광등 연결됨: '+(dev.name||'BLE');addEv('ok',CAM,'경광등/사이렌 BLE 연결됨('+bleSirenType+')');}
+    else addEv('warn',CAM,'제어 가능한 사이렌 특성(UART/IAS)을 못 찾음');
+    dev.addEventListener('gattserverdisconnected',function(){bleSirenCh=null;$('bleSirenBtn').textContent='+ 경광등/사이렌 BLE 연결';});
+  }catch(e){}
+}
+function downloadCSV(){
+  if(!coordLog.length){alert('저장된 좌표가 없습니다.');return;}
+  var rows=['t,wid,joint,x,y,score'];
+  coordLog.forEach(function(s){s.lm.forEach(function(p,j){rows.push([s.t,s.wid,j,p[0],p[1],p[2]].join(','));});});
+  var blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shk_multi_'+CAM+'_'+Date.now()+'.csv';a.click();
+}
+$('dl').addEventListener('click',downloadCSV);
+async function listCams(){
+  try{var ds=await navigator.mediaDevices.enumerateDevices();var cams=ds.filter(function(d){return d.kind==='videoinput';});
+    if(!cams.length)return;var sel=$('camsel');sel.innerHTML='';
+    cams.forEach(function(c,i){var o=document.createElement('option');o.value=c.deviceId;o.textContent=c.label||('카메라 '+(i+1));sel.appendChild(o);});
+    sel.onchange=function(){switchCam(sel.value);};
+  }catch(e){}
+}
+async function switchCam(id){
+  try{if(video.srcObject)video.srcObject.getTracks().forEach(function(t){t.stop();});
+    var st=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:id},width:1280,height:960},audio:false});
+    video.srcObject=st;await video.play();
+  }catch(e){}
+}
+
+// ---- 경고음 ----
+var audioCtx=null,sirenNodes=null;
+function initAudio(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();}catch(e){}}
+function beep(freq,dur,vol){if(!soundOn||!audioCtx)return;try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.value=freq;o.connect(g);g.connect(audioCtx.destination);var t=audioCtx.currentTime;g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vol||0.3,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o.stop(t+dur+0.03);}catch(e){}}
+function startSiren(){if(!soundOn||!audioCtx||sirenNodes)return;try{var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sawtooth';o.frequency.value=760;o.connect(g);g.connect(audioCtx.destination);var lfo=audioCtx.createOscillator(),lg=audioCtx.createGain();lfo.frequency.value=4.5;lg.gain.value=320;lfo.connect(lg);lg.connect(o.frequency);var t=audioCtx.currentTime;g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.22,t+0.05);lfo.start();o.start();sirenNodes={o:o,g:g,lfo:lfo};}catch(e){}}
+function stopSiren(){if(!sirenNodes)return;try{var t=audioCtx.currentTime;sirenNodes.g.gain.cancelScheduledValues(t);sirenNodes.g.gain.linearRampToValueAtTime(0.0001,t+0.12);sirenNodes.o.stop(t+0.16);sirenNodes.lfo.stop(t+0.16);}catch(e){}sirenNodes=null;}
+
+// ---- 음성 안내(TTS) + 워치 진동 ----
+var voiceOn=true;
+var outScreen=true, outMqtt=false, outBle=false, bleSirenCh=null, bleSirenType='', _sirenOn=false;
+var MENT={helmet:'안전모를 착용하세요',mask:'마스크를 착용하세요',vest:'안전조끼를 착용하세요'};
+function speak(t){if(!voiceOn||!('speechSynthesis'in window))return;try{var u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=1.0;speechSynthesis.speak(u);}catch(e){}}
+// 덱앤어라운스: 음성이 나올 때만 사이렌을 죽였다가, 끝나면 재개 → 사이렌↔음성 교대
+function announce(msgs,resumeSiren){
+  if(!voiceOn||!('speechSynthesis'in window)||!msgs.length){if(resumeSiren&&soundOn)startSiren();return;}
+  speechSynthesis.cancel();
+  if(sirenNodes)stopSiren();              // 음성 동안 사이렌 일시 정지
+  msgs.forEach(function(m,i){var u=new SpeechSynthesisUtterance(m);u.lang='ko-KR';u.rate=1.0;u.volume=1.0;
+    if(i===msgs.length-1)u.onend=function(){if(resumeSiren&&soundOn)startSiren();};  // 마지막 음성 끌난 뒤 사이렌 재개
+    speechSynthesis.speak(u);});
+}
+function ppeMissAny(p){return !!(p&&(p.helmet||p.mask||p.vest));}
+// 4초 주기: 위반 멘트 반복 + 해당 작업자 워치 진동
+setInterval(function(){
+  var ks=Object.keys(people); if(!ks.length)return;
+  var need={helmet:false,mask:false,vest:false}, fall=false, viol={};
+  ks.forEach(function(k){var P=people[k];
+    if(P.ppe.helmet)need.helmet=true; if(P.ppe.mask)need.mask=true; if(P.ppe.vest)need.vest=true;
+    if(P.state==='fall'||P.state==='inactive')fall=true;
+    if(ppeMissAny(P.ppe)||P.state==='fall'||P.state==='inactive')viol[P.wid]=1;
+  });
+  var alarmNow=fall||need.helmet||need.mask||need.vest;   // 낙상 OR PPE 미착용
+  // 착용 등으로 위반이 사라지면 사이렌 정지
+  if(!alarmNow&&sirenNodes)stopSiren();
+  // 음성(덕앤어나운스 — 사이렌과 번갈아 재생, 착용 시 해당 멘트 자동 제외)
+  if(voiceOn&&'speechSynthesis'in window){
+    var msgs=[];
+    if(fall)msgs.push('낙상이 감지되었습니다. 즉시 확인하세요.');
+    if(need.helmet)msgs.push(MENT.helmet); if(need.mask)msgs.push(MENT.mask); if(need.vest)msgs.push(MENT.vest);
+    announce(msgs,alarmNow);   // 위반 지속 시 음성 끝난 뒤 사이렌(경고음) 재개 → 교대
+  } else if(alarmNow&&soundOn&&!sirenNodes){startSiren();}  // 음성 꺼져 있으면 사이렌만
+  // 워치 진동(워치별 1회). 지정된 작업자에게만, 미지정 워치는 위반 시 모두(데모)
+  var anyViol=Object.keys(viol).length>0;
+  Object.keys(vitals).forEach(function(w){var v=vitals[w];if(!v.alertCh)return;
+    var hit=v.assign?viol[v.assign]:anyViol;
+    if(hit){try{v.alertCh.writeValue(new Uint8Array([2]));}catch(e){}}
+  });
+  // ---- 외부 경보 출력(경광등·플래시·외부사이렌) 동시 발화 ----
+  var msg=fall?'낙상':(need.helmet?'안전모 착용':need.mask?'마스크 착용':need.vest?'안전조끼 착용':'');
+  if(outMqtt){
+    if(alarmNow)bus.send({type:'siren',cam:CAM,cmd:'on',pattern:fall?'fast':'slow',light:1,strobe:1,msg:msg,t:Date.now()});
+    else if(_sirenOn)bus.send({type:'siren',cam:CAM,cmd:'off',t:Date.now()});
+  }
+  if(outBle&&bleSirenCh){try{
+    if(bleSirenType==='ias')bleSirenCh.writeValue(new Uint8Array([alarmNow?2:0]));
+    else bleSirenCh.writeValue(new TextEncoder().encode(alarmNow?('ALERT:'+(fall?'FALL':'PPE')+'\n'):'OFF\n'));
+  }catch(e){}}
+  _sirenOn=alarmNow;
+},4000);
+
+// ---- 작업자 워치 (Web Bluetooth) ----
+var vitals={};
+function renderVitals(){var box=$('vitlist'),ks=Object.keys(vitals);if(!ks.length){box.innerHTML='<div class="vitempty">연결된 워치 없음</div>';return;}
+  var wids=Object.keys(people).map(function(k){return people[k].wid;});
+  box.innerHTML=ks.map(function(w){var v=vitals[w];var hi=v.hr>140||(v.hr>0&&v.hr<45);
+    var opts='<option value="">미지정</option>'+wids.map(function(id){return '<option value="'+id+'"'+(v.assign===id?' selected':'')+'>'+id+'</option>';}).join('');
+    var vib=v.alertCh?'<span class="vib">진동✓</span>':'<span class="vib off">진동✕</span>';
+    return '<div class="vitrow'+(hi?' hi':'')+'"><div><div class="vn">'+v.name+' '+vib+'</div><div class="vd"><select data-w="'+w+'" class="wassign">'+opts+'</select></div></div><div class="vhr">'+(v.hr||'--')+'<small> bpm</small></div></div>';}).join('');
+  box.querySelectorAll('.wassign').forEach(function(s){s.addEventListener('change',function(){vitals[this.getAttribute('data-w')].assign=this.value;});});}
+function parseHR(dv){var f=dv.getUint8(0);return (f&1)?dv.getUint16(1,true):dv.getUint8(1);}
+async function connectWatch(){
+  if(!navigator.bluetooth){alert('이 브라우저는 Web Bluetooth를 지원하지 않습니다.');return;}
+  try{var dev=await navigator.bluetooth.requestDevice({filters:[{services:['heart_rate']}],optionalServices:['battery_service','immediate_alert']});
+    var srv=await dev.gatt.connect();var hs=await srv.getPrimaryService('heart_rate');var ch=await hs.getCharacteristic('heart_rate_measurement');
+    await ch.startNotifications();var wid=newWid();vitals[wid]={name:dev.name||'워치',hr:0,assign:'',alertCh:null};
+    try{var ias=await srv.getPrimaryService('immediate_alert');vitals[wid].alertCh=await ias.getCharacteristic('alert_level');}catch(_){}
+    renderVitals();
+    ch.addEventListener('characteristicvaluechanged',function(e){var hr=parseHR(e.target.value);vitals[wid].hr=hr;renderVitals();bus.send({type:'vital',cam:CAM,wid:wid,hr:hr,t:Date.now()});});
+    dev.addEventListener('gattserverdisconnected',function(){delete vitals[wid];renderVitals();});
+  }catch(e){}
+}
+$('watchBtn').addEventListener('click',connectWatch);
+</script>
+</body>
+</html>
