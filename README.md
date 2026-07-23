@@ -18,7 +18,7 @@ same deployed fall-detection state machine evaluated here):
 | `SHine-K_urfd_minimal_colab.ipynb` | **Minimal 3-cell reproduction** — full 70-sequence URFD run, no Drive mount needed, results zip auto-downloads. Verified: `fall-01` triggers at frame 150, identical to the manuscript run | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_urfd_minimal_colab.ipynb) |
 | `SHine-K_full70_colab.ipynb` | **Full URFD run — 30 fall + 40 ADL sequences**, deployed thresholds (sens = 1.0), no re-tuning | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_full70_colab.ipynb) |
 | `SHine-K_reproducibility_colab.ipynb` | Paper figures (Fig. 1–4, 300 dpi), recovery-guide GIFs, post-processing micro-benchmark, and the 8+8-sequence URFD subset run reported in the manuscript | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/SHine-K_reproducibility_colab.ipynb) |
-| `gen_figures_colab.ipynb` | Regenerates the manuscript's diagram figures pixel-identically to the submitted files | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/gen_figures_colab.ipynb) |
+| `gen_figures_colab.ipynb` | **Regenerates every figure in the manuscript (Figs. 1–8)** — diagrams (deterministic matplotlib, version-pinned), result plots re-drawn from the archived run data in this repo, and the two prototype screenshots re-captured headlessly (Playwright) from the public demo console | [Open in Colab](https://colab.research.google.com/github/y3korea/SHine-K-/blob/main/gen_figures_colab.ipynb) |
 
 Run everything with **Runtime → Run all**. Each run writes a timestamped `output/run_<id>/` folder
 containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.png`, and a
@@ -31,7 +31,7 @@ containing `eval_metrics.json`, `eval_per_sequence.csv`, `eval_confusion_matrix.
 - `SHine-K_full70_colab.ipynb` — full 70-sequence URFD evaluation (env-var config only; evaluation cell identical to the original notebook)
 - `SHine-K_reproducibility_colab.ipynb` — figures · GIFs · latency micro-benchmark · URFD subset evaluation
 - `gen_figures.py` — publication figures (Fig. 1–4, 300 dpi, monochrome academic style)
-- `gen_figures_colab.ipynb` — Colab reproduction of the manuscript diagram figures (pixel-identical)
+- `gen_figures_colab.ipynb` — Colab reproduction of **all 8 manuscript figures**: diagrams (Figs. 1–3, deterministic; pixel-identical under the pinned matplotlib), result plots (Figs. 6–8, same code + archived run data), and demo-console screenshots (Figs. 4–5, headless capture; equivalent-capture standard since the console is live)
 - `gen_gifs.py` — recovery-exercise animation guides
 - `latency_benchmark.js` — post-processing micro-benchmark (simplified REBA + fire pixel-scan; neural inference excluded)
 - `output/run_20260627_222419/` — subset run cited in the manuscript (metrics, per-sequence CSV, confusion matrix, logs, manifest)
