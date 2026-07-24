@@ -1,4 +1,4 @@
-# Worksite prototype — the deployed edge module (pose + fall + REBA + PPE + fire)
+# Worksite prototype — the deployed edge module (pose + fall + posture-strain index + PPE + fire)
 
 This is the full in-browser worksite module of SHine-K, provided so the
 "Working" implementation-status claims in the paper (Table II) are directly
@@ -22,8 +22,8 @@ ONNX Runtime Web (WebAssembly), entirely on-device.
 python3 -m http.server 8080
 # then open http://localhost:8080/worksite_multi.html and allow the camera
 ```
-- Multi-person MoveNet pose, the fall/inactivity state machine, and simplified
-  REBA run per person on-device.
+- Multi-person MoveNet pose, the fall/inactivity state machine, and the two-cue
+  posture-strain index (a REBA-inspired proxy, not a REBA score) run per person on-device.
 - With `ppe.onnx` present (included here), each camera is checked for
   helmet / vest / mask; a missing item raises a PPE event.
 - Only de-identified skeleton coordinates and structured events are sent over
