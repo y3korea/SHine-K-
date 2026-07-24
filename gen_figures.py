@@ -97,7 +97,7 @@ def fig3():
                  "de-identified skeleton coordinates and structured events. On-demand video uses a\n"
                  "consent-gated, time-limited (60 s), audit-logged 'break-glass' gate.",fs=7.4)
     # legend
-    ax.plot([20,24],[3.5,3.5],color=EDGE,lw=1.6); ax.text(25,3.5,"implemented / validated",fontsize=6.4,va="center")
+    ax.plot([20,24],[3.5,3.5],color=EDGE,lw=1.6); ax.text(25,3.5,"implemented (see Table II)",fontsize=6.4,va="center")
     ax.plot([55,59],[3.5,3.5],color=EDGE,lw=1.0,ls="--"); ax.text(60,3.5,"design target",fontsize=6.4,va="center")
     save(fig,"fig3_dataflow.png")
 
@@ -118,7 +118,7 @@ def fig4():
     fig,ax=newax(9.2,11.6)
     dl=(0,(4,3))
     # --- legend: validated(solid) vs design-target(dashed) + decision + AI ---
-    ax.plot([6,10],[97.9,97.9],color=EDGE,lw=1.7); ax.text(11,97.9,"implemented / validated",fontsize=6.5,va="center")
+    ax.plot([6,10],[97.9,97.9],color=EDGE,lw=1.7); ax.text(11,97.9,"implemented (see Table II)",fontsize=6.5,va="center")
     ax.plot([40,44],[97.9,97.9],color=EDGE,lw=1.0,ls="--"); ax.text(45,97.9,"design target",fontsize=6.5,va="center")
     ax.add_patch(Polygon([(63.5,99.2),(65,97.9),(63.5,96.6),(62,97.9)],closed=True,fc=FILL,ec=EDGE,lw=1.0))
     ax.text(66.5,97.9,"decision",fontsize=6.5,va="center")
@@ -128,13 +128,13 @@ def fig4():
     bc(ax,50,90,30,5.5,"Worker on the shop floor")
     # 2 SENSE inputs (camera + self-check = implemented; wearable + environment = design target)
     sy=80; sx=[14,38,62,86]
-    bc(ax,sx[0],sy,21.5,10,"Camera (edge AI)\nposture · fall · caught-in\nhelmet / mask / vest",ai=True,fs=5.7,ty=79.2)
+    bc(ax,sx[0],sy,21.5,10,"Camera (edge AI)\nposture · fall\nhelmet / mask / vest",ai=True,fs=5.7,ty=79.2)
     bc(ax,sx[1],sy,21,10,"Wearable vitals\nHR / temp",design=True,fs=6.2)
     bc(ax,sx[2],sy,21,10,"Self check-in\nsleep / fatigue / pain",fs=6.2)
     bc(ax,sx[3],sy,21,10,"Environment IoT\ngas / noise",design=True,fs=6.2)
     for x in sx: arr(ax,50,87.25,x,sy+5.0)
     # 3 risk judgement — validated rule-based core + honest PoC note
-    bc(ax,50,65,52,11,"Risk judgement: fall state machine + REBA  (rule-based, validated)",ai=True,fs=6.6,ty=66.7)
+    bc(ax,50,65,52,11,"Risk judgement: fall state machine (benchmark-validated) + posture index (rule-based)",ai=True,fs=6.6,ty=66.7)
     txt(ax,50,62.6,"+ open agent harness (Sense→Judge→Act→Connect): PoC · interface-level · not evaluated",fs=5.7,it=True,color="#6a6f7b")
     for x in sx: arr(ax,x,sy-5.0,50,70.5)
     # 4 decision
@@ -146,7 +146,7 @@ def fig4():
     arr(ax,18,35.5,18,29.5)
     bc(ax,18,12,30,6,"Emergency resolved",fs=6.6); arr(ax,18,20.5,18,15)
     # right: health/ergonomic risk -> recovery loop
-    bc(ax,80,40,30,9,"Health / ergonomic risk\nhigh REBA / fatigue",fs=6.5)
+    bc(ax,80,40,30,9,"Health / ergonomic risk\nhigh posture index / fatigue",fs=6.5)
     arr(ax,63,52,80,44.5); txt(ax,72.5,49,"cumulative",fs=6.5,it=True,bg="white")
     bc(ax,80,25,32,10,"Personalized recovery coaching\nrest / stretch (animated guide)",ai=True,fs=6.5)
     arr(ax,80,35.5,80,30)

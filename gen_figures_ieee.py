@@ -49,7 +49,7 @@ def fig_arch():
     # Figs. 2-3 and the Working/PoC/Design staging of Table II (honest staging).
     stages=[("SENSE",[("Vision: pose / PPE / fire",False),("Wearable vitals (BLE)",True),
                       ("Radar (mmWave)",True),("Environment IoT",True)]),
-            ("JUDGE",[("Fall state machine",False),("REBA (33-kpt pose)",False),
+            ("JUDGE",[("Fall state machine",False),("Posture index (2-cue)",False),
                       ("Agent harness",True)]),
             ("ACT",[("Risk alerts + log",False),("Ergonomic feedback",False),
                     ("Recovery coaching",True)]),
@@ -58,7 +58,7 @@ def fig_arch():
     colw=22; gap=2; x0=3; y=16; H=74
     # legend (top band): solid = implemented/validated, dashed = design target
     ax.plot([x0,x0+3.4],[95.5,95.5],color=EDGE,lw=1.3)
-    txt(ax,x0+4.2,95.5,"implemented / validated",fs=8.0,ha="left")
+    txt(ax,x0+4.2,95.5,"implemented (see Table II)",fs=8.0,ha="left")
     ax.plot([54,57.4],[95.5,95.5],color=EDGE,lw=1.1,ls=(0,(4,3)))
     txt(ax,58.2,95.5,"design target",fs=8.0,ha="left")
     for i,(name,nodes) in enumerate(stages):
@@ -109,7 +109,7 @@ def fig_dataflow():
                    "only de-identified skeleton coordinates and structured events. On-demand video\n"
                    "uses a consent-gated, time-limited (60 s), audit-logged 'break-glass' gate.",
             ha="left",va="center",ma="left",fontsize=7.2,color=TXT,zorder=5,linespacing=1.55)
-    ax.plot([22,26],[3.2,3.2],color=EDGE,lw=1.6); ax.text(27.2,3.2,"implemented / validated",fontsize=7.5,va="center")
+    ax.plot([22,26],[3.2,3.2],color=EDGE,lw=1.6); ax.text(27.2,3.2,"implemented (see Table II)",fontsize=7.5,va="center")
     ax.plot([57,61],[3.2,3.2],color=EDGE,lw=1.0,ls="--"); ax.text(62.2,3.2,"design target",fontsize=7.5,va="center")
     save(fig,"fig_dataflow.png")
 
@@ -139,7 +139,7 @@ def fig_workflow():
     rxl=dcx+dhw+dgap; rw=min(25.0,99.5-rxl); rx=rxl+rw/2
     cm_y=32.0
     # ---- 범례 ----
-    ax.plot([3,6.6],[62.4,62.4],color=EDGE,lw=1.7); ax.text(7.6,62.4,"implemented / validated",fontsize=6.4,va="center")
+    ax.plot([3,6.6],[62.4,62.4],color=EDGE,lw=1.7); ax.text(7.6,62.4,"implemented (see Table II)",fontsize=6.4,va="center")
     ax.plot([33,36.6],[62.4,62.4],color=EDGE,lw=1.0,ls="--"); ax.text(37.6,62.4,"design target",fontsize=6.4,va="center")
     ax.add_patch(Polygon([(53.5,63.6),(55,62.4),(53.5,61.2),(52,62.4)],closed=True,fc=FILL,ec=EDGE,lw=1.0))
     ax.text(56,62.4,"decision",fontsize=6.4,va="center")
@@ -148,7 +148,7 @@ def fig_workflow():
     # ---- 워커 ----
     bc(ax,wx,32,ww,9,"Worker on the\nshop floor",fs=6.4)
     # ---- 센서 열 + 분산 수렴 ----
-    sense=[("Camera (edge AI)\nposture · fall\ncaught-in\nhelmet / mask / vest",True,False,52,13.0,-1.2,38.5),
+    sense=[("Camera (edge AI)\nposture · fall\nhelmet / mask / vest",True,False,52,11.5,-1.2,38.5),
            ("Wearable vitals\nHR / temp",False,True,38.5,9.5,0,35.0),
            ("Self check-in\nsleep / fatigue / pain",False,False,25.5,9.5,0,31.0),
            ("Environment IoT\ngas / noise",False,True,12.5,9.5,0,27.5)]
@@ -157,7 +157,7 @@ def fig_workflow():
         warr(ax,wr,32,sleft-G,cy)                    # 워커 → 센서 (좌변-G)
         warr(ax,sright,cy,jleft-G,jy)                # 센서 → 판정 (좌변-G, 세로 분산 종점)
     # ---- 판정 ----
-    bc(ax,jx,33,jw,15,"Risk judgement:\nfall state machine + REBA\n(rule-based, validated)",ai=True,fs=5.4,tdy=-1.0)
+    bc(ax,jx,33,jw,15,"Risk judgement:\nfall state machine\n(benchmark-validated) +\nposture index (rule-based)",ai=True,fs=5.0,tdy=-1.0)
     txt(ax,jx,22.6,"+ open agent harness: PoC ·\ninterface-level · not evaluated",fs=5.4,it=True,color=DGREY)
     # ---- 마름모 ----
     ax.add_patch(Polygon([(dcx,dcy+7),(dcx+dhw,dcy),(dcx,dcy-7),(dcx-dhw,dcy)],closed=True,fc=FILL,ec=EDGE,lw=1.0,zorder=2))
@@ -170,9 +170,9 @@ def fig_workflow():
     bc(ax,rx,yAl,rw,9.5,"Alert + evacuation\n& roll-call + 119/e-Gen\n(design)",design=True,fs=5.9)
     bc(ax,rx,yE,rw,5.5,"Emergency resolved",fs=6.4)
     bc(ax,rx,cm_y,rw,5.5,"Continue monitoring",fs=6.4)
-    bc(ax,rx,yH,rw,8,"Health / ergonomic risk\nhigh REBA / fatigue",fs=5.9)
-    bc(ax,rx,yP,rw,9.5,"Personalized recovery\ncoaching (rest/stretch)",ai=True,fs=5.9,tdy=-1.1)
-    bc(ax,rx,yC,rw,5.8,"Confirm done · log\nadherence (design)",fs=5.9)
+    bc(ax,rx,yH,rw,8,"Health / ergonomic risk\nhigh posture index / fatigue",fs=5.9)
+    bc(ax,rx,yP,rw,9.5,"Personalized recovery\ncoaching (rest/stretch)",ai=True,design=True,fs=5.9,tdy=-1.1)
+    bc(ax,rx,yC,rw,5.8,"Confirm done · log\nadherence (design)",design=True,fs=5.9)
     warr(ax,rx,yA-4.0,rx,yAl+4.75+G)   # Acute 하변(55.65) → Alert 상변(53.35)+G
     warr(ax,rx,yAl-4.75,rx,yE+2.75+G)  # Alert 하변(43.85) → Emergency 상변(41.55)+G
     warr(ax,rx,yH-4.0,rx,yP+4.75+G)    # Health 하변(19.95) → Personalized 상변(17.65)+G
